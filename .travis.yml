@@ -1,0 +1,17 @@
+language: node_js
+node_js:
+ - "8"
+ - "10"
+ - "node"
+install: npm install --ignore-scripts
+script:
+  - npm run build
+  - npm run lint
+  - npm test
+  - npm run spec
+after_success:
+  - npm run coveralls
+cache:
+  - npm
+  - directories:
+    - .rdf-test-suite-cache
