@@ -14,16 +14,19 @@ describe('JsonLdSerializer', () => {
   });
 
   it('should serialize an empty stream', async () => {
-    const stream = streamifyArray([]);
-    return expect(await stringifyStream(stream.pipe(serializer))).toEqual(`[]`);
+    const quads = [];
+    return expect(await serialize(quads)).toEqual(
+      [
+      ],
+    );
   });
 
   it('should serialize a single triple', async () => {
-    const stream = streamifyArray([
+    const quads = [
       triple(namedNode('http://ex.org/myid'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
-    ]);
-    return expect(JSON.parse(await stringifyStream(stream.pipe(serializer))))
-      .toEqual([
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
         {
           "@id": "http://ex.org/myid",
           "http://ex.org/pred1": [
@@ -34,12 +37,12 @@ describe('JsonLdSerializer', () => {
   });
 
   it('should serialize two triples with different subjects and predicates', async () => {
-    const stream = streamifyArray([
+    const quads = [
       triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
       triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred2'), literal('http://ex.org/obj1')),
-    ]);
-    return expect(JSON.parse(await stringifyStream(stream.pipe(serializer))))
-      .toEqual([
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
         {
           "@id": "http://ex.org/myid1",
           "http://ex.org/pred1": [
@@ -56,12 +59,12 @@ describe('JsonLdSerializer', () => {
   });
 
   it('should serialize two triples with different subjects but equal predicates', async () => {
-    const stream = streamifyArray([
+    const quads = [
       triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
       triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
-    ]);
-    return expect(JSON.parse(await stringifyStream(stream.pipe(serializer))))
-      .toEqual([
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
         {
           "@id": "http://ex.org/myid1",
           "http://ex.org/pred1": [
@@ -78,12 +81,12 @@ describe('JsonLdSerializer', () => {
   });
 
   it('should serialize two triples with equal subjects but different predicates', async () => {
-    const stream = streamifyArray([
+    const quads = [
       triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
       triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred2'), literal('http://ex.org/obj1')),
-    ]);
-    return expect(JSON.parse(await stringifyStream(stream.pipe(serializer))))
-      .toEqual([
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
         {
           "@id": "http://ex.org/myid1",
           "http://ex.org/pred1": [
@@ -97,12 +100,12 @@ describe('JsonLdSerializer', () => {
   });
 
   it('should serialize two triples with equal subjects and predicates', async () => {
-    const stream = streamifyArray([
+    const quads = [
       triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
       triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj2')),
-    ]);
-    return expect(JSON.parse(await stringifyStream(stream.pipe(serializer))))
-      .toEqual([
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
         {
           "@id": "http://ex.org/myid1",
           "http://ex.org/pred1": [
@@ -112,5 +115,9 @@ describe('JsonLdSerializer', () => {
         },
       ]);
   });
+
+  async function serialize(quadsArray) {
+    return JSON.parse(await stringifyStream(streamifyArray(quadsArray).pipe(serializer)));
+  }
 
 });
