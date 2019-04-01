@@ -11,6 +11,7 @@ export class JsonLdSerializer extends Transform {
   private readonly options: IJsonLdSerializerOptions;
   private readonly useRdfType: boolean;
 
+  private indentation: number;
   private opened: boolean;
   private lastSubject: RDF.Term;
   private lastPredicate: RDF.Term;
@@ -20,8 +21,8 @@ export class JsonLdSerializer extends Transform {
   constructor(options: IJsonLdSerializerOptions = {}) {
     super({ objectMode: true });
 
+    this.indentation = 0;
     this.options = options;
-    this.useRdfType = this.options.useRdfType;
   }
 
   /**
@@ -42,13 +43,17 @@ export class JsonLdSerializer extends Transform {
     // Open the array before the first quad
     if (!this.opened) {
       this.opened = true;
-      this.push(`[`);
+      this.pushIndented(`[`);
+      this.indentation++;
     }
 
     if (!this.lastSubject || !quad.subject.equals(this.lastSubject)) {
       if (this.lastSubject) {
         // Close the last subject's node (and predicate array)
-        this.push(`]},`);
+        this.indentation--;
+        this.pushIndented(`]`);
+        this.indentation--;
+        this.pushIndented(`},`);
 
         // Reset predicate buffer
         this.lastPredicate = null;
@@ -59,13 +64,16 @@ export class JsonLdSerializer extends Transform {
       // Open a new node for the new subject
       this.lastSubject = quad.subject;
       const subjectValue = quad.subject.termType === 'BlankNode' ? '_:' + quad.subject.value : quad.subject.value;
-      this.push(`{"@id": "${subjectValue}",`);
+      this.pushIndented(`{`);
+      this.indentation++;
+      this.pushIndented(`"@id": "${subjectValue}",`);
     }
 
     if (!this.lastPredicate || !quad.predicate.equals(this.lastPredicate)) {
       if (this.lastPredicate) {
         // Close the last predicate's array
-        this.push(`],`);
+        this.indentation--;
+        this.pushIndented(`],`);
       }
 
       // Open a new array for the new predicate
@@ -84,41 +92,46 @@ export class JsonLdSerializer extends Transform {
   public _flush(callback: TransformCallback): void {
     // If the stream was empty, ensure that we push the opening array
     if (!this.opened) {
-      this.push(`[`);
+      this.pushIndented(`[`);
+      this.indentation++;
     }
 
     if (this.lastPredicate) {
       // Close predicate array
       this.lastPredicate = null;
       this.hadObjectForPredicate = false;
-      this.push(`]`);
+      this.indentation--;
+      this.pushIndented(`]`);
     }
     if (this.lastSubject) {
       // Close the subject node
       this.lastSubject = null;
-      this.push(`}`);
+      this.indentation--;
+      this.pushIndented(`}`);
     }
 
-    this.push(`]`);
+    this.indentation--;
+    this.pushIndented(`]`);
     return callback(null, null);
   }
 
   protected pushPredicate(predicate: RDF.Term) {
     let property = predicate.value;
 
-    if (!this.useRdfType && property === Util.RDF_TYPE) {
+    if (!this.options.useRdfType && property === Util.RDF_TYPE) {
       property = '@type';
       this.objectOptions = { ...this.options, compactIds: true };
     }
 
-    this.push(`"${property}": [`);
+    this.pushIndented(`"${property}": [`);
+    this.indentation++;
   }
 
   protected pushObject(object: RDF.Term, options: ITermToValueOptions) {
     if (!this.hadObjectForPredicate) {
       this.hadObjectForPredicate = true;
     } else {
-      this.push(`,`);
+      this.pushIndented(`,`);
     }
     let value;
     try {
@@ -126,7 +139,20 @@ export class JsonLdSerializer extends Transform {
     } catch (e) {
       return this.emit('error', e);
     }
-    this.push(`${JSON.stringify(value)}`);
+    this.pushIndented(`${JSON.stringify(value, null, this.options.space)}`);
+  }
+
+  protected pushIndented(data: string) {
+    const prefix = this.getIndentPrefix();
+    const lines = data.split('\n').map((line) => prefix + line).join('\n');
+    this.push(lines);
+    if (this.options.space) {
+      this.push('\n');
+    }
+  }
+
+  protected getIndentPrefix(): string {
+    return this.options.space ? this.options.space.repeat(this.indentation) : '';
   }
 
 }
@@ -135,6 +161,11 @@ export class JsonLdSerializer extends Transform {
  * Constructor arguments for {@link JsonLdSerializer}
  */
 export interface IJsonLdSerializerOptions {
+  /**
+   * The indentation string that should be used when stringifying JSON.
+   * Defaults to undefined.
+   */
+  space?: string;
   /**
    * If '@id' objects without other entries should be compacted.
    * Defaults to false.

@@ -311,3 +311,138 @@ describe('JsonLdSerializer', () => {
   });
 
 });
+
+describe('JsonLdSerializer with pretty-printing', () => {
+
+  let serializer: JsonLdSerializer;
+
+  beforeEach(() => {
+    serializer = new JsonLdSerializer({ space: '  ' });
+  });
+
+  it('should serialize an empty stream', async () => {
+    const quads = [];
+    return expect(await serialize(quads)).toEqual(`[
+]
+`);
+  });
+
+  it('should serialize a single triple', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads)).toEqual(`[
+  {
+    "@id": "http://ex.org/myid",
+    "http://ex.org/pred1": [
+      {
+        "@id": "http://ex.org/obj1"
+      }
+    ]
+  }
+]
+`);
+  });
+
+  it('should serialize two triples with different subjects and predicates', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred2'), namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads)).toEqual(`[
+  {
+    "@id": "http://ex.org/myid1",
+    "http://ex.org/pred1": [
+      {
+        "@id": "http://ex.org/obj1"
+      }
+    ]
+  },
+  {
+    "@id": "http://ex.org/myid2",
+    "http://ex.org/pred2": [
+      {
+        "@id": "http://ex.org/obj1"
+      }
+    ]
+  }
+]
+`);
+  });
+
+  it('should serialize two triples with different subjects but equal predicates', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads)).toEqual(`[
+  {
+    "@id": "http://ex.org/myid1",
+    "http://ex.org/pred1": [
+      {
+        "@id": "http://ex.org/obj1"
+      }
+    ]
+  },
+  {
+    "@id": "http://ex.org/myid2",
+    "http://ex.org/pred1": [
+      {
+        "@id": "http://ex.org/obj1"
+      }
+    ]
+  }
+]
+`);
+  });
+
+  it('should serialize two triples with equal subjects but different predicates', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred2'), namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads)).toEqual(`[
+  {
+    "@id": "http://ex.org/myid1",
+    "http://ex.org/pred1": [
+      {
+        "@id": "http://ex.org/obj1"
+      }
+    ],
+    "http://ex.org/pred2": [
+      {
+        "@id": "http://ex.org/obj1"
+      }
+    ]
+  }
+]
+`);
+  });
+
+  it('should serialize two triples with equal subjects and predicates', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj2')),
+    ];
+    return expect(await serialize(quads)).toEqual(`[
+  {
+    "@id": "http://ex.org/myid1",
+    "http://ex.org/pred1": [
+      {
+        "@id": "http://ex.org/obj1"
+      }
+      ,
+      {
+        "@id": "http://ex.org/obj2"
+      }
+    ]
+  }
+]
+`);
+  });
+
+  async function serialize(quadsArray, customSerializer?) {
+    return await stringifyStream(streamifyArray(quadsArray).pipe(customSerializer || serializer));
+  }
+
+});
