@@ -1,4 +1,5 @@
 import {blankNode, defaultGraph, literal, namedNode, quad, triple} from "@rdfjs/data-model";
+import {PassThrough} from "stream";
 import {JsonLdSerializer} from "../../lib/JsonLdSerializer";
 
 // tslint:disable:no-var-requires
@@ -7,7 +8,7 @@ const streamifyArray = require('streamify-array');
 
 describe('JsonLdSerializer', () => {
 
-  let serializer;
+  let serializer: JsonLdSerializer;
 
   beforeEach(() => {
     serializer = new JsonLdSerializer();
@@ -253,5 +254,45 @@ describe('JsonLdSerializer', () => {
   async function serialize(quadsArray, customSerializer?) {
     return JSON.parse(await stringifyStream(streamifyArray(quadsArray).pipe(customSerializer || serializer)));
   }
+
+  describe('#import', () => {
+    it('should parse a stream', async () => {
+      const quads = [
+        triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('abc')),
+        triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('def')),
+      ];
+      return expect(JSON.parse(await stringifyStream(streamifyArray(quads).pipe(serializer)))).toEqual([
+        {
+          "@id": "http://ex.org/myid1",
+          "http://ex.org/pred1": [
+            { "@value": "abc" },
+            { "@value": "def" },
+          ],
+        },
+      ]);
+    });
+
+    it('should parse another stream', async () => {
+      const quads = [
+        triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred1'), literal('abc')),
+        triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred1'), literal('def')),
+      ];
+      return expect(JSON.parse(await stringifyStream(streamifyArray(quads).pipe(serializer)))).toEqual([
+        {
+          "@id": "http://ex.org/myid2",
+          "http://ex.org/pred1": [
+            { "@value": "abc" },
+            { "@value": "def" },
+          ],
+        },
+      ]);
+    });
+
+    it('should forward error events', async () => {
+      const stream = new PassThrough();
+      stream._read = () => stream.emit('error', new Error('my error'));
+      return expect(stringifyStream(serializer.import(stream))).rejects.toThrow(new Error('my error'));
+    });
+  });
 
 });
