@@ -37,6 +37,21 @@ describe('JsonLdSerializer', () => {
       ]);
   });
 
+  it('should serialize a single triple with blank node subject', async () => {
+    const quads = [
+      triple(blankNode('b1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "_:b1",
+          "http://ex.org/pred1": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+        },
+      ]);
+  });
+
   it('should serialize two triples with different subjects and predicates', async () => {
     const quads = [
       triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),

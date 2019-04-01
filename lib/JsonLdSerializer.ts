@@ -58,7 +58,8 @@ export class JsonLdSerializer extends Transform {
 
       // Open a new node for the new subject
       this.lastSubject = quad.subject;
-      this.push(`{"@id": "${quad.subject.value}",`);
+      const subjectValue = quad.subject.termType === 'BlankNode' ? '_:' + quad.subject.value : quad.subject.value;
+      this.push(`{"@id": "${subjectValue}",`);
     }
 
     if (!this.lastPredicate || !quad.predicate.equals(this.lastPredicate)) {
