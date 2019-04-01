@@ -1,7 +1,7 @@
 import EventEmitter = NodeJS.EventEmitter;
 import * as RDF from "rdf-js";
 import {PassThrough, Transform, TransformCallback} from "stream";
-import {Util} from "./Util";
+import {ITermToValueOptions, Util} from "./Util";
 
 /**
  * A stream transformer that transforms an {@link RDF.Stream} into a JSON-LD (text) stream.
@@ -15,6 +15,7 @@ export class JsonLdSerializer extends Transform {
   private lastSubject: RDF.Term;
   private lastPredicate: RDF.Term;
   private hadObjectForPredicate: boolean;
+  private objectOptions: ITermToValueOptions;
 
   constructor(options: IJsonLdSerializerOptions = {}) {
     super({ objectMode: true });
@@ -52,6 +53,7 @@ export class JsonLdSerializer extends Transform {
         // Reset predicate buffer
         this.lastPredicate = null;
         this.hadObjectForPredicate = false;
+        this.objectOptions = null;
       }
 
       // Open a new node for the new subject
@@ -68,11 +70,12 @@ export class JsonLdSerializer extends Transform {
       // Open a new array for the new predicate
       this.lastPredicate = quad.predicate;
       this.hadObjectForPredicate = false;
+      this.objectOptions = null;
       this.pushPredicate(quad.predicate);
     }
 
     // Write the object value
-    this.pushObject(quad.object);
+    this.pushObject(quad.object, this.objectOptions || this.options);
 
     return callback();
   }
@@ -104,18 +107,25 @@ export class JsonLdSerializer extends Transform {
 
     if (!this.useRdfType && property === Util.RDF_TYPE) {
       property = '@type';
+      this.objectOptions = { ...this.options, compactIds: true };
     }
 
     this.push(`"${property}": [`);
   }
 
-  protected pushObject(object: RDF.Term) {
+  protected pushObject(object: RDF.Term, options: ITermToValueOptions) {
     if (!this.hadObjectForPredicate) {
       this.hadObjectForPredicate = true;
     } else {
       this.push(`,`);
     }
-    this.push(`"${object.value}"`);
+    let value;
+    try {
+      value = Util.termToValue(object, options);
+    } catch (e) {
+      return this.emit('error', e);
+    }
+    this.push(`${JSON.stringify(value)}`);
   }
 
 }
@@ -125,8 +135,18 @@ export class JsonLdSerializer extends Transform {
  */
 export interface IJsonLdSerializerOptions {
   /**
+   * If '@id' objects without other entries should be compacted.
+   * Defaults to false.
+   */
+  compactIds?: boolean;
+  /**
    * If rdf:type predicates should be emitted directly, instead of @type.
    * Defaults to false.
    */
   useRdfType?: boolean;
+  /**
+   * If literals should be converted to primitive types, such as booleans and integers.
+   * Defaults to false;
+   */
+  useNativeTypes?: boolean;
 }

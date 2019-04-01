@@ -23,14 +23,14 @@ describe('JsonLdSerializer', () => {
 
   it('should serialize a single triple', async () => {
     const quads = [
-      triple(namedNode('http://ex.org/myid'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
     ];
     return expect(await serialize(quads)).toEqual(
       [
         {
           "@id": "http://ex.org/myid",
           "http://ex.org/pred1": [
-            "http://ex.org/obj1",
+            { "@id": "http://ex.org/obj1" },
           ],
         },
       ]);
@@ -38,21 +38,21 @@ describe('JsonLdSerializer', () => {
 
   it('should serialize two triples with different subjects and predicates', async () => {
     const quads = [
-      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
-      triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred2'), literal('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred2'), namedNode('http://ex.org/obj1')),
     ];
     return expect(await serialize(quads)).toEqual(
       [
         {
           "@id": "http://ex.org/myid1",
           "http://ex.org/pred1": [
-            "http://ex.org/obj1",
+            { "@id": "http://ex.org/obj1" },
           ],
         },
         {
           "@id": "http://ex.org/myid2",
           "http://ex.org/pred2": [
-            "http://ex.org/obj1",
+            { "@id": "http://ex.org/obj1" },
           ],
         },
       ]);
@@ -60,21 +60,21 @@ describe('JsonLdSerializer', () => {
 
   it('should serialize two triples with different subjects but equal predicates', async () => {
     const quads = [
-      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
-      triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
     ];
     return expect(await serialize(quads)).toEqual(
       [
         {
           "@id": "http://ex.org/myid1",
           "http://ex.org/pred1": [
-            "http://ex.org/obj1",
+            { "@id": "http://ex.org/obj1" },
           ],
         },
         {
           "@id": "http://ex.org/myid2",
           "http://ex.org/pred1": [
-            "http://ex.org/obj1",
+            { "@id": "http://ex.org/obj1" },
           ],
         },
       ]);
@@ -82,18 +82,18 @@ describe('JsonLdSerializer', () => {
 
   it('should serialize two triples with equal subjects but different predicates', async () => {
     const quads = [
-      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
-      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred2'), literal('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred2'), namedNode('http://ex.org/obj1')),
     ];
     return expect(await serialize(quads)).toEqual(
       [
         {
           "@id": "http://ex.org/myid1",
           "http://ex.org/pred1": [
-            "http://ex.org/obj1",
+            { "@id": "http://ex.org/obj1" },
           ],
           "http://ex.org/pred2": [
-            "http://ex.org/obj1",
+            { "@id": "http://ex.org/obj1" },
           ],
         },
       ]);
@@ -101,25 +101,25 @@ describe('JsonLdSerializer', () => {
 
   it('should serialize two triples with equal subjects and predicates', async () => {
     const quads = [
-      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj1')),
-      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('http://ex.org/obj2')),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj1')),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), namedNode('http://ex.org/obj2')),
     ];
     return expect(await serialize(quads)).toEqual(
       [
         {
           "@id": "http://ex.org/myid1",
           "http://ex.org/pred1": [
-            "http://ex.org/obj1",
-            "http://ex.org/obj2",
+            { "@id": "http://ex.org/obj1" },
+            { "@id": "http://ex.org/obj2" },
           ],
         },
       ]);
   });
 
-  it('should serialize rdf:type predicates to @type', async () => {
+  it('should serialize rdf:type predicates to @type with compacted object IRIs', async () => {
     const quads = [
       triple(namedNode('http://ex.org/myid1'), namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-        literal('http://ex.org/obj1')),
+        namedNode('http://ex.org/obj1')),
     ];
     return expect(await serialize(quads)).toEqual(
       [
@@ -136,17 +136,118 @@ describe('JsonLdSerializer', () => {
     const customSerializer = new JsonLdSerializer({ useRdfType: true });
     const quads = [
       triple(namedNode('http://ex.org/myid1'), namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-        literal('http://ex.org/obj1')),
+        namedNode('http://ex.org/obj1')),
     ];
     return expect(await serialize(quads, customSerializer)).toEqual(
       [
         {
           "@id": "http://ex.org/myid1",
           "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": [
-            "http://ex.org/obj1",
+            { "@id": "http://ex.org/obj1" },
           ],
         },
       ]);
+  });
+
+  it('should serialize string literals', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('abc')),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('def')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/myid1",
+          "http://ex.org/pred1": [
+            { "@value": "abc" },
+            { "@value": "def" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize language-tagged literals', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('abc', 'en')),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('def', 'nl')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/myid1",
+          "http://ex.org/pred1": [
+            { "@value": "abc", "@language": "en" },
+            { "@value": "def", "@language": "nl" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize literals with unknown type', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'),
+        literal('abc', namedNode('http://ex.org/type'))),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'),
+        literal('def', namedNode('http://ex.org/type'))),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/myid1",
+          "http://ex.org/pred1": [
+            { "@value": "abc", "@type": "http://ex.org/type" },
+            { "@value": "def", "@type": "http://ex.org/type" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize literals with integer type', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'),
+        literal('10', namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'),
+        literal('20', namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/myid1",
+          "http://ex.org/pred1": [
+            { "@value": "10", "@type": "http://www.w3.org/2001/XMLSchema#integer" },
+            { "@value": "20", "@type": "http://www.w3.org/2001/XMLSchema#integer" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize literals with integer type when useNativeTypes is true', async () => {
+    const customSerializer = new JsonLdSerializer({ useNativeTypes: true });
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'),
+        literal('10', namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'),
+        literal('20', namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
+    ];
+    return expect(await serialize(quads, customSerializer)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/myid1",
+          "http://ex.org/pred1": [
+            { "@value": 10 },
+            { "@value": 20 },
+          ],
+        },
+      ]);
+  });
+
+  it('should fail to serialize invalid literals with integer type when useNativeTypes is true', async () => {
+    const customSerializer = new JsonLdSerializer({ useNativeTypes: true });
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'),
+        literal('abc', namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
+    ];
+    return expect(serialize(quads, customSerializer)).rejects.toThrow(new Error('Invalid xsd:integer value \'abc\''));
   });
 
   async function serialize(quadsArray, customSerializer?) {
