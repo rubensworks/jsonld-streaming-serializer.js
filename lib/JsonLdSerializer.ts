@@ -50,19 +50,32 @@ export class JsonLdSerializer extends Transform {
 
     // Write graph
     if (!this.lastGraph || !quad.graph.equals(this.lastGraph)) {
-      if (this.lastGraph && this.lastGraph.termType !== 'DefaultGraph') {
-        // Close the predicate array
-        this.indentation--;
-        this.pushIndented(`]`);
-        // Close the last subject's node;
-        this.indentation--;
-        this.pushIndented(`}`);
-        // Close the graph array
-        this.indentation--;
-        this.pushIndented(`]`);
-        // Close the graph id node
-        this.indentation--;
-        this.pushIndented(`},`);
+      if (this.lastGraph) {
+        if (this.lastGraph.termType !== 'DefaultGraph') {
+          // The last graph was named
+
+          // Close the predicate array
+          this.indentation--;
+          this.pushIndented(`]`);
+          // Close the last subject's node;
+          this.indentation--;
+          this.pushIndented(`}`);
+          // Close the graph array
+          this.indentation--;
+          this.pushIndented(`]`);
+          // Close the graph id node
+          this.indentation--;
+          this.pushIndented(`},`);
+        } else {
+          // The last graph was default
+
+          // Close the predicate array
+          this.indentation--;
+          this.pushIndented(`]`);
+          // Close the last subject's node;
+          this.indentation--;
+          this.pushIndented(`},`);
+        }
 
         // Reset object buffer
         this.hadObjectForPredicate = false;

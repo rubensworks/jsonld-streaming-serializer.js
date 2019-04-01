@@ -435,6 +435,64 @@ describe('JsonLdSerializer', () => {
       ]);
   });
 
+  it('should serialize a triple followed by a quad', async () => {
+    const quads = [
+      triple(blankNode('b1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph2')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "_:b1",
+          "http://ex.org/pred1": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+        },
+        {
+          "@id": "http://ex.org/mygraph2",
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize a quad followed by a triple', async () => {
+    const quads = [
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph2')),
+      triple(blankNode('b1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph2",
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+        },
+        {
+          "@id": "_:b1",
+          "http://ex.org/pred1": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+        },
+      ]);
+  });
+
   async function serialize(quadsArray, customSerializer?) {
     return JSON.parse(await stringifyStream(streamifyArray(quadsArray).pipe(customSerializer || serializer)));
   }
