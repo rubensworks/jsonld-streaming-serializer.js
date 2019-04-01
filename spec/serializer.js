@@ -11,7 +11,9 @@ module.exports = {
       return Promise.reject(
         new ErrorSkipped(`Test with spec version ${options.specVersion} was skipped, only 1.0 is supported.`));
     }
-    return require('stream-to-string')(require('streamify-array')(data)
+    const a = require('stream-to-string')(require('streamify-array')(data)
       .pipe(new JsonLdSerializer(Object.assign({ baseIRI, space: '  ' }, options))));
+    a.then((b) => console.log(b));
+    return a;
   },
 };

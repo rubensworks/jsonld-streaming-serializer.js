@@ -6,6 +6,7 @@ import {JsonLdSerializer} from "../../lib/JsonLdSerializer";
 const stringifyStream = require('stream-to-string');
 const streamifyArray = require('streamify-array');
 
+// tslint:disable:object-literal-sort-keys
 describe('JsonLdSerializer', () => {
 
   let serializer: JsonLdSerializer;
@@ -266,6 +267,174 @@ describe('JsonLdSerializer', () => {
     return expect(serialize(quads, customSerializer)).rejects.toThrow(new Error('Invalid xsd:integer value \'abc\''));
   });
 
+  it('should serialize a single quad in a custom graph', async () => {
+    const quads = [
+      quad(blankNode('b1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1'), namedNode('http://ex.org/mygraph1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "@graph": [
+            {
+              "@id": "_:b1",
+              "http://ex.org/pred1": [
+                { "@id": "http://ex.org/obj1" },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize two quads in a the same graph, with equal subject and predicate', async () => {
+    const quads = [
+      quad(blankNode('b1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1'), namedNode('http://ex.org/mygraph1')),
+      quad(blankNode('b1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "@graph": [
+            {
+              "@id": "_:b1",
+              "http://ex.org/pred1": [
+                { "@id": "http://ex.org/obj1" },
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize two quads in a the same graph, with equal subject and different predicate', async () => {
+    const quads = [
+      quad(blankNode('b1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1'), namedNode('http://ex.org/mygraph1')),
+      quad(blankNode('b1'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj1'), namedNode('http://ex.org/mygraph1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "@graph": [
+            {
+              "@id": "_:b1",
+              "http://ex.org/pred1": [
+                { "@id": "http://ex.org/obj1" },
+              ],
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj1" },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize two quads in a the same graph, with different subject and predicate', async () => {
+    const quads = [
+      quad(blankNode('b1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1'), namedNode('http://ex.org/mygraph1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1'), namedNode('http://ex.org/mygraph1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "@graph": [
+            {
+              "@id": "_:b1",
+              "http://ex.org/pred1": [
+                { "@id": "http://ex.org/obj1" },
+              ],
+            },
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred1": [
+                { "@id": "http://ex.org/obj1" },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize two equal triples in a different graph', async () => {
+    const quads = [
+      quad(blankNode('b1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1'), namedNode('http://ex.org/mygraph1')),
+      quad(blankNode('b1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1'), namedNode('http://ex.org/mygraph2')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "@graph": [
+            {
+              "@id": "_:b1",
+              "http://ex.org/pred1": [
+                { "@id": "http://ex.org/obj1" },
+              ],
+            },
+          ],
+        },
+        {
+          "@id": "http://ex.org/mygraph2",
+          "@graph": [
+            {
+              "@id": "_:b1",
+              "http://ex.org/pred1": [
+                { "@id": "http://ex.org/obj1" },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize two non-equal triples in a different graph', async () => {
+    const quads = [
+      quad(blankNode('b1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1'), namedNode('http://ex.org/mygraph1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph2')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "@graph": [
+            {
+              "@id": "_:b1",
+              "http://ex.org/pred1": [
+                { "@id": "http://ex.org/obj1" },
+              ],
+            },
+          ],
+        },
+        {
+          "@id": "http://ex.org/mygraph2",
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
   async function serialize(quadsArray, customSerializer?) {
     return JSON.parse(await stringifyStream(streamifyArray(quadsArray).pipe(customSerializer || serializer)));
   }
@@ -434,6 +603,44 @@ describe('JsonLdSerializer with pretty-printing', () => {
       ,
       {
         "@id": "http://ex.org/obj2"
+      }
+    ]
+  }
+]
+`);
+  });
+
+  it('should serialize two quads', async () => {
+    const quads = [
+      quad(blankNode('b1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1'), namedNode('http://ex.org/mygraph1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph2')),
+    ];
+    return expect(await serialize(quads)).toEqual(`[
+  {
+    "@id": "http://ex.org/mygraph1",
+    "@graph": [
+      {
+        "@id": "_:b1",
+        "http://ex.org/pred1": [
+          {
+            "@id": "http://ex.org/obj1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "@id": "http://ex.org/mygraph2",
+    "@graph": [
+      {
+        "@id": "_:b2",
+        "http://ex.org/pred2": [
+          {
+            "@id": "http://ex.org/obj2"
+          }
+        ]
       }
     ]
   }

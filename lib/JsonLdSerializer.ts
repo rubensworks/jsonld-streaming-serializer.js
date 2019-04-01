@@ -17,6 +17,7 @@ export class JsonLdSerializer extends Transform {
   private lastPredicate: RDF.Term;
   private hadObjectForPredicate: boolean;
   private objectOptions: ITermToValueOptions;
+  private lastGraph: RDF.Term;
 
   constructor(options: IJsonLdSerializerOptions = {}) {
     super({ objectMode: true });
@@ -47,28 +48,67 @@ export class JsonLdSerializer extends Transform {
       this.indentation++;
     }
 
-    if (!this.lastSubject || !quad.subject.equals(this.lastSubject)) {
-      if (this.lastSubject) {
-        // Close the last subject's node (and predicate array)
+    // Write graph
+    if (!this.lastGraph || !quad.graph.equals(this.lastGraph)) {
+      if (this.lastGraph && this.lastGraph.termType !== 'DefaultGraph') {
+        // Close the predicate array
         this.indentation--;
         this.pushIndented(`]`);
+        // Close the last subject's node;
+        this.indentation--;
+        this.pushIndented(`}`);
+        // Close the graph array
+        this.indentation--;
+        this.pushIndented(`]`);
+        // Close the graph id node
         this.indentation--;
         this.pushIndented(`},`);
 
-        // Reset predicate buffer
-        this.lastPredicate = null;
+        // Reset object buffer
         this.hadObjectForPredicate = false;
         this.objectOptions = null;
+
+        // Reset predicate buffer
+        this.lastPredicate = null;
+
+        // Reset subject buffer
+        this.lastSubject = null;
+      }
+
+      // Push the graph
+      if (quad.graph.termType !== 'DefaultGraph') {
+        this.pushId(quad.graph);
+        this.pushIndented(`"@graph": [`);
+        this.indentation++;
+      }
+
+      this.lastGraph = quad.graph;
+    }
+
+    // Write subject
+    if (!this.lastSubject || !quad.subject.equals(this.lastSubject)) {
+      if (this.lastSubject) {
+        // Close the predicate array
+        this.indentation--;
+        this.pushIndented(`]`);
+        // Close the last subject's node;
+        this.indentation--;
+        this.pushIndented(`},`);
+
+        // Reset object buffer
+        this.hadObjectForPredicate = false;
+        this.objectOptions = null;
+
+        // Reset predicate buffer
+        this.lastPredicate = null;
       }
 
       // Open a new node for the new subject
+      this.pushId(quad.subject);
       this.lastSubject = quad.subject;
-      const subjectValue = quad.subject.termType === 'BlankNode' ? '_:' + quad.subject.value : quad.subject.value;
-      this.pushIndented(`{`);
-      this.indentation++;
-      this.pushIndented(`"@id": "${subjectValue}",`);
     }
 
+    // Write predicate
     if (!this.lastPredicate || !quad.predicate.equals(this.lastPredicate)) {
       if (this.lastPredicate) {
         // Close the last predicate's array
@@ -109,10 +149,25 @@ export class JsonLdSerializer extends Transform {
       this.indentation--;
       this.pushIndented(`}`);
     }
+    if (this.lastGraph && this.lastGraph.termType !== 'DefaultGraph') {
+      // Close the graph node
+      this.lastGraph = null;
+      this.indentation--;
+      this.pushIndented(`]`);
+      this.indentation--;
+      this.pushIndented(`}`);
+    }
 
     this.indentation--;
     this.pushIndented(`]`);
     return callback(null, null);
+  }
+
+  protected pushId(term: RDF.Term) {
+    const subjectValue = term.termType === 'BlankNode' ? '_:' + term.value : term.value;
+    this.pushIndented(`{`);
+    this.indentation++;
+    this.pushIndented(`"@id": "${subjectValue}",`);
   }
 
   protected pushPredicate(predicate: RDF.Term) {
