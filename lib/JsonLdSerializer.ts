@@ -1,6 +1,7 @@
 import EventEmitter = NodeJS.EventEmitter;
 import * as RDF from "rdf-js";
 import {PassThrough, Transform, TransformCallback} from "stream";
+import {Util} from "./Util";
 
 /**
  * A stream transformer that transforms an {@link RDF.Stream} into a JSON-LD (text) stream.
@@ -8,6 +9,7 @@ import {PassThrough, Transform, TransformCallback} from "stream";
 export class JsonLdSerializer extends Transform {
 
   private readonly options: IJsonLdSerializerOptions;
+  private readonly useRdfType: boolean;
 
   private opened: boolean;
   private lastSubject: RDF.Term;
@@ -16,7 +18,9 @@ export class JsonLdSerializer extends Transform {
 
   constructor(options: IJsonLdSerializerOptions = {}) {
     super({ objectMode: true });
+
     this.options = options;
+    this.useRdfType = this.options.useRdfType;
   }
 
   /**
@@ -64,7 +68,7 @@ export class JsonLdSerializer extends Transform {
       // Open a new array for the new predicate
       this.lastPredicate = quad.predicate;
       this.hadObjectForPredicate = false;
-      this.push(`"${quad.predicate.value}": [`);
+      this.pushPredicate(quad.predicate);
     }
 
     // Write the object value
@@ -95,6 +99,16 @@ export class JsonLdSerializer extends Transform {
     return callback(null, null);
   }
 
+  protected pushPredicate(predicate: RDF.Term) {
+    let property = predicate.value;
+
+    if (!this.useRdfType && property === Util.RDF_TYPE) {
+      property = '@type';
+    }
+
+    this.push(`"${property}": [`);
+  }
+
   protected pushObject(object: RDF.Term) {
     if (!this.hadObjectForPredicate) {
       this.hadObjectForPredicate = true;
@@ -110,5 +124,9 @@ export class JsonLdSerializer extends Transform {
  * Constructor arguments for {@link JsonLdSerializer}
  */
 export interface IJsonLdSerializerOptions {
-
+  /**
+   * If rdf:type predicates should be emitted directly, instead of @type.
+   * Defaults to false.
+   */
+  useRdfType?: boolean;
 }

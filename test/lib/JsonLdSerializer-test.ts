@@ -116,8 +116,41 @@ describe('JsonLdSerializer', () => {
       ]);
   });
 
-  async function serialize(quadsArray) {
-    return JSON.parse(await stringifyStream(streamifyArray(quadsArray).pipe(serializer)));
+  it('should serialize rdf:type predicates to @type', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+        literal('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/myid1",
+          "@type": [
+            "http://ex.org/obj1",
+          ],
+        },
+      ]);
+  });
+
+  it('should not serialize rdf:type predicates to @type if useRdfType is true', async () => {
+    const customSerializer = new JsonLdSerializer({ useRdfType: true });
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+        literal('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads, customSerializer)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/myid1",
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": [
+            "http://ex.org/obj1",
+          ],
+        },
+      ]);
+  });
+
+  async function serialize(quadsArray, customSerializer?) {
+    return JSON.parse(await stringifyStream(streamifyArray(quadsArray).pipe(customSerializer || serializer)));
   }
 
 });
