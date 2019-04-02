@@ -822,6 +822,68 @@ describe('JsonLdSerializer', () => {
     });
   });
 
+  describe('list', () => {
+    it('should emit an empty list in a triple', async () => {
+      serializer.write(quad(namedNode('http://ex.org/subj1'), namedNode('http://ex.org/pred1'),
+        serializer.list([])));
+      serializer.end();
+      return expect(JSON.parse(await stringifyStream(serializer))).toEqual([
+        {
+          "@id": "http://ex.org/subj1",
+          "http://ex.org/pred1": [
+            {
+              "@list": [],
+            },
+          ],
+        },
+      ]);
+    });
+
+    it('should emit a list with named nodes in a triple', async () => {
+      serializer.write(quad(namedNode('http://ex.org/subj1'), namedNode('http://ex.org/pred1'),
+        serializer.list([
+          namedNode('a'),
+          namedNode('b'),
+        ])));
+      serializer.end();
+      return expect(JSON.parse(await stringifyStream(serializer))).toEqual([
+        {
+          "@id": "http://ex.org/subj1",
+          "http://ex.org/pred1": [
+            {
+              "@list": [
+                { '@id': 'a' },
+                { '@id': 'b' },
+              ],
+            },
+          ],
+        },
+      ]);
+    });
+
+    it('should emit a list with literals in a triple', async () => {
+      serializer.write(quad(namedNode('http://ex.org/subj1'), namedNode('http://ex.org/pred1'),
+        serializer.list([
+          literal('a'),
+          literal('b'),
+        ])));
+      serializer.end();
+      return expect(JSON.parse(await stringifyStream(serializer))).toEqual([
+        {
+          "@id": "http://ex.org/subj1",
+          "http://ex.org/pred1": [
+            {
+              "@list": [
+                { '@value': 'a' },
+                { '@value': 'b' },
+              ],
+            },
+          ],
+        },
+      ]);
+    });
+  });
+
 });
 
 describe('JsonLdSerializer with pretty-printing', () => {

@@ -136,6 +136,19 @@ export class JsonLdSerializer extends Transform {
   }
 
   /**
+   * Construct a list in an RDF.Term object that can be used
+   * inside a quad's object to write into the serializer
+   * as a list using the @list keyword.
+   * @param {Term[]} values A list of values, can be empty.
+   * @return {Term} A term that should be used in the object position of the quad that is written to the serializer.
+   */
+  public list(values: RDF.Term[]): RDF.Term {
+    return <RDF.Term> <any> {
+      '@list': values.map((value) => Util.termToValue(value, this.options)),
+    };
+  }
+
+  /**
    * Claled when the incoming stream is closed.
    * @param {module:stream.internal.TransformCallback} callback Callback that is invoked when the flushing is done.
    * @private
@@ -208,7 +221,11 @@ export class JsonLdSerializer extends Transform {
     // Convert the object into a value and push it
     let value;
     try {
-      value = Util.termToValue(object, this.objectOptions || this.options);
+      if ((<any> object)['@list']) {
+        value = object;
+      } else {
+        value = Util.termToValue(object, this.objectOptions || this.options);
+      }
     } catch (e) {
       return this.emit('error', e);
     }
