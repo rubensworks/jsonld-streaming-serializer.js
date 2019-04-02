@@ -778,6 +778,143 @@ describe('JsonLdSerializer', () => {
       ]);
   });
 
+  it('should serialize a triple with a base IRI', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://type.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads, new JsonLdSerializer({ baseIRI: 'http://ex.org/' }))).toEqual(
+      {
+        "@context": {
+          "@base": "http://ex.org/",
+        },
+        "@graph": [
+          {
+            "@id": "myid1",
+            "http://type.org/pred1": [
+              { "@id": "obj1" },
+            ],
+          },
+        ],
+      });
+  });
+
+  it('should serialize a triple with a base IRI but not emit context it if excludeContext is true', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://type.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads, new JsonLdSerializer({ baseIRI: 'http://ex.org/', excludeContext: true })))
+      .toEqual([
+        {
+          "@id": "myid1",
+          "http://type.org/pred1": [
+            { "@id": "obj1" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize a triple with a context', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://type.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    const context = {
+      "@base": "http://ex.org/",
+      "@vocab": "http://type.org/",
+    };
+    return expect(await serialize(quads, new JsonLdSerializer({ context }))).toEqual(
+      {
+        "@context": {
+          "@base": "http://ex.org/",
+          "@vocab": "http://type.org/",
+        },
+        "@graph": [
+          {
+            "@id": "myid1",
+            "pred1": [
+              { "@id": "obj1" },
+            ],
+          },
+        ],
+      });
+  });
+
+  it('should serialize a triple with a context but not emit it if excludeContext is true', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://type.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    const context = {
+      "@base": "http://ex.org/",
+      "@vocab": "http://type.org/",
+    };
+    return expect(await serialize(quads, new JsonLdSerializer({ context, excludeContext: true }))).toEqual(
+      [
+        {
+          "@id": "myid1",
+          "pred1": [
+            { "@id": "obj1" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize triples with a complex context with prefixes', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://type.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    const context = {
+      ex: "http://ex.org/",
+      type: "http://type.org/",
+    };
+    return expect(await serialize(quads, new JsonLdSerializer({ context }))).toEqual(
+      {
+        "@context": {
+          ex: "http://ex.org/",
+          type: "http://type.org/",
+        },
+        "@graph": [
+          {
+            "@id": "ex:myid1",
+            "type:pred1": [
+              { "@id": "ex:obj1" },
+            ],
+          },
+        ],
+      });
+  });
+
+  it('should serialize triples with a complex context with alias terms', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://type.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    const context = {
+      id: "http://ex.org/myid1",
+      p: "http://type.org/pred1",
+      o: "http://ex.org/obj1",
+    };
+    return expect(await serialize(quads, new JsonLdSerializer({ context }))).toEqual(
+      {
+        "@context": {
+          id: "http://ex.org/myid1",
+          p: "http://type.org/pred1",
+          o: "http://ex.org/obj1",
+        },
+        "@graph": [
+          {
+            "@id": "http://ex.org/myid1",
+            "p": [
+              { "@id": "http://ex.org/obj1" },
+            ],
+          },
+        ],
+      });
+  });
+
   async function serialize(quadsArray, customSerializer?) {
     return JSON.parse(await stringifyStream(streamifyArray(quadsArray).pipe(customSerializer || serializer)));
   }
@@ -1162,6 +1299,35 @@ describe('JsonLdSerializer with pretty-printing', () => {
     ]
   }
 ]
+`);
+  });
+
+  it('should serialize a triple with a context', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://type.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    const context = {
+      "@base": "http://ex.org/",
+      "@vocab": "http://type.org/",
+    };
+    return expect(await serialize(quads, new JsonLdSerializer({ context, space: '  ' }))).toEqual(`{
+  "@context":
+  {
+    "@base": "http://ex.org/",
+    "@vocab": "http://type.org/"
+  },
+  "@graph": [
+    {
+      "@id": "myid1",
+      "pred1": [
+        {
+          "@id": "obj1"
+        }
+      ]
+    }
+  ]
+}
 `);
   });
 

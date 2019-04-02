@@ -29,7 +29,8 @@
     "index.js"
   ],
   "dependencies": {
-    "@types/rdf-js": "^2.0.1"
+    "@types/rdf-js": "^2.0.1",
+    "jsonld-context-parser": "^1.1.4"
   },
   "pre-commit": [
     "build",
@@ -37,7 +38,6 @@
     "test"
   ],
   "devDependencies": {
-    "@rdfjs/data-model": "^1.1.1",
     "@types/jest": "^24.0.1",
     "@types/jest-each": "^0.3.4",
     "@types/node": "^11.9.0",
@@ -61,7 +61,9 @@
         "tsConfig": "test/tsconfig.json"
       }
     },
-    "setupFilesAfterEnv": [ "jest-rdf" ],
+    "setupFilesAfterEnv": [
+      "jest-rdf"
+    ],
     "transform": {
       "^.+\\.ts$": "ts-jest"
     },

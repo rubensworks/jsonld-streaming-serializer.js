@@ -11,6 +11,7 @@ export class SeparatorType {
   public static readonly ARRAY_END = new SeparatorType(']');
   public static readonly ARRAY_END_COMMA = new SeparatorType('],');
   public static readonly GRAPH_FIELD = new SeparatorType('"@graph": [');
+  public static readonly CONTEXT_FIELD = new SeparatorType('"@context":');
 
   public readonly label: string;
 

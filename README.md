@@ -38,6 +38,11 @@ const JsonLdSerializer = require("jsonld-streaming-serializer").JsonLdSerializer
 
 TODO
 
+## Restrictions
+
+* RDF lists are not converted to @list
+* No deduplication of triples
+
 ## License
 This software is written by [Ruben Taelman](http://rubensworks.net/).
 

@@ -1,4 +1,5 @@
 import EventEmitter = NodeJS.EventEmitter;
+import {ContextParser, IJsonLdContextNormalized, JsonLdContext} from "jsonld-context-parser";
 import * as RDF from "rdf-js";
 import {PassThrough, Transform, TransformCallback} from "stream";
 import {SeparatorType} from "./SeparatorType";
@@ -10,6 +11,8 @@ import {ITermToValueOptions, Util} from "./Util";
 export class JsonLdSerializer extends Transform {
 
   private readonly options: IJsonLdSerializerOptions;
+  private readonly originalContext: JsonLdContext;
+  private readonly context: Promise<IJsonLdContextNormalized>;
 
   private indentation: number;
   private opened: boolean;
@@ -24,6 +27,17 @@ export class JsonLdSerializer extends Transform {
 
     this.indentation = 0;
     this.options = options;
+
+    // Parse the context
+    if (this.options.baseIRI && !this.options.context) {
+      this.options.context = { '@base': this.options.baseIRI };
+    }
+    if (this.options.context) {
+      this.originalContext = this.options.context;
+      this.context = new ContextParser().parse(this.options.context, { baseIri: this.options.baseIRI });
+    } else {
+      this.context = Promise.resolve({});
+    }
   }
 
   /**
@@ -48,11 +62,59 @@ export class JsonLdSerializer extends Transform {
    * @private
    */
   public _transform(quad: RDF.Quad, encoding: string, callback: TransformCallback): void {
+    this.context.then((context) => {
+      this.transformQuad(quad, context);
+      callback();
+    }).catch(callback);
+  }
+
+  /**
+   * Construct a list in an RDF.Term object that can be used
+   * inside a quad's object to write into the serializer
+   * as a list using the @list keyword.
+   * @param {Term[]} values A list of values, can be empty.
+   * @return {Term} A term that should be used in the object position of the quad that is written to the serializer.
+   */
+  public list(values: RDF.Term[]): RDF.Term {
+    return <RDF.Term> <any> {
+      '@list': values.map((value) => Util.termToValue(value, this.options)),
+    };
+  }
+
+  /**
+   * Claled when the incoming stream is closed.
+   * @param {module:stream.internal.TransformCallback} callback Callback that is invoked when the flushing is done.
+   * @private
+   */
+  public _flush(callback: TransformCallback): void {
+    // If the stream was empty, ensure that we push the opening array
+    if (!this.opened) {
+      this.pushDocumentStart();
+    }
+
+    if (this.lastPredicate) {
+      this.endPredicate();
+    }
+    if (this.lastSubject) {
+      this.endSubject();
+    }
+    if (this.lastGraph && this.lastGraph.termType !== 'DefaultGraph') {
+      this.endGraph();
+    }
+
+    this.endDocument();
+    return callback(null, null);
+  }
+
+  /**
+   * Transforms a quad into the text stream.
+   * @param {Quad} quad An RDF quad.
+   * @param {IJsonLdContextNormalized} context A context for compacting.
+   */
+  protected transformQuad(quad: RDF.Quad, context: IJsonLdContextNormalized): void {
     // Open the array before the first quad
     if (!this.opened) {
-      this.opened = true;
-      this.pushSeparator(SeparatorType.ARRAY_START);
-      this.indentation++;
+      this.pushDocumentStart();
     }
 
     // Check if the subject equals the last named graph
@@ -90,7 +152,7 @@ export class JsonLdSerializer extends Transform {
       // Push the graph
       if (quad.graph.termType !== 'DefaultGraph') {
         if (!lastSubjectMatchesGraph) {
-          this.pushId(quad.graph);
+          this.pushId(quad.graph, context);
         }
         this.pushSeparator(SeparatorType.GRAPH_FIELD);
         this.indentation++;
@@ -114,7 +176,7 @@ export class JsonLdSerializer extends Transform {
         }
 
         // Open a new node for the new subject
-        this.pushId(quad.subject);
+        this.pushId(quad.subject, context);
       }
       this.lastSubject = quad.subject;
     }
@@ -126,61 +188,37 @@ export class JsonLdSerializer extends Transform {
       }
 
       // Open a new array for the new predicate
-      this.pushPredicate(quad.predicate);
+      this.pushPredicate(quad.predicate, context);
     }
 
     // Write the object value
-    this.pushObject(quad.object);
-
-    return callback();
+    this.pushObject(quad.object, context);
   }
 
-  /**
-   * Construct a list in an RDF.Term object that can be used
-   * inside a quad's object to write into the serializer
-   * as a list using the @list keyword.
-   * @param {Term[]} values A list of values, can be empty.
-   * @return {Term} A term that should be used in the object position of the quad that is written to the serializer.
-   */
-  public list(values: RDF.Term[]): RDF.Term {
-    return <RDF.Term> <any> {
-      '@list': values.map((value) => Util.termToValue(value, this.options)),
-    };
-  }
+  protected pushDocumentStart() {
+    this.opened = true;
 
-  /**
-   * Claled when the incoming stream is closed.
-   * @param {module:stream.internal.TransformCallback} callback Callback that is invoked when the flushing is done.
-   * @private
-   */
-  public _flush(callback: TransformCallback): void {
-    // If the stream was empty, ensure that we push the opening array
-    if (!this.opened) {
+    if (this.originalContext && !this.options.excludeContext) {
+      this.pushSeparator(SeparatorType.OBJECT_START);
+      this.indentation++;
+      this.pushSeparator(SeparatorType.CONTEXT_FIELD);
+      this.pushIndented(JSON.stringify(this.originalContext, null, this.options.space) + ',');
+      this.pushSeparator(SeparatorType.GRAPH_FIELD);
+      this.indentation++;
+    } else {
       this.pushSeparator(SeparatorType.ARRAY_START);
       this.indentation++;
     }
-
-    if (this.lastPredicate) {
-      this.endPredicate();
-    }
-    if (this.lastSubject) {
-      this.endSubject();
-    }
-    if (this.lastGraph && this.lastGraph.termType !== 'DefaultGraph') {
-      this.endGraph();
-    }
-
-    this.indentation--;
-    this.pushSeparator(SeparatorType.ARRAY_END);
-    return callback(null, null);
   }
 
   /**
    * Push the given term as an @id field.
    * @param {Term} term An RDF term.
+   * @param {IJsonLdContextNormalized} context The context.
    */
-  protected pushId(term: RDF.Term) {
-    const subjectValue = term.termType === 'BlankNode' ? '_:' + term.value : term.value;
+  protected pushId(term: RDF.Term, context: IJsonLdContextNormalized) {
+    const subjectValue = term.termType === 'BlankNode'
+      ? '_:' + term.value : ContextParser.compactTerm(term.value, context, false);
     this.pushSeparator(SeparatorType.OBJECT_START);
     this.indentation++;
     this.pushIndented(`"@id": "${subjectValue}",`);
@@ -189,18 +227,19 @@ export class JsonLdSerializer extends Transform {
   /**
    * Push the given predicate field.
    * @param {Term} predicate An RDF term.
+   * @param {IJsonLdContextNormalized} context The context.
    */
-  protected pushPredicate(predicate: RDF.Term) {
+  protected pushPredicate(predicate: RDF.Term, context: IJsonLdContextNormalized) {
     let property = predicate.value;
 
     // Convert rdf:type into @type if not disabled.
     if (!this.options.useRdfType && property === Util.RDF_TYPE) {
       property = '@type';
-      this.objectOptions = { ...this.options, compactIds: true };
+      this.objectOptions = { ...this.options, compactIds: true, vocab: true };
     }
 
     // Open array for following objects
-    this.pushIndented(`"${property}": [`);
+    this.pushIndented(`"${ContextParser.compactTerm(property, context, true)}": [`);
     this.indentation++;
 
     this.lastPredicate = predicate;
@@ -209,8 +248,9 @@ export class JsonLdSerializer extends Transform {
   /**
    * Push the given object value.
    * @param {Term} object An RDF term.
+   * @param {IJsonLdContextNormalized} context The context.
    */
-  protected pushObject(object: RDF.Term) {
+  protected pushObject(object: RDF.Term, context: IJsonLdContextNormalized) {
     // Add a comma if we already had an object for this predicate
     if (!this.hadObjectForPredicate) {
       this.hadObjectForPredicate = true;
@@ -224,12 +264,25 @@ export class JsonLdSerializer extends Transform {
       if ((<any> object)['@list']) {
         value = object;
       } else {
-        value = Util.termToValue(object, this.objectOptions || this.options);
+        value = Util.termToValue(object, context, this.objectOptions || this.options);
       }
     } catch (e) {
       return this.emit('error', e);
     }
-    this.pushIndented(`${JSON.stringify(value, null, this.options.space)}`);
+    this.pushIndented(JSON.stringify(value, null, this.options.space));
+  }
+
+  protected endDocument() {
+    this.opened = false;
+    if (this.originalContext && !this.options.excludeContext) {
+      this.indentation--;
+      this.pushSeparator(SeparatorType.ARRAY_END);
+      this.indentation--;
+      this.pushSeparator(SeparatorType.OBJECT_END);
+    } else {
+      this.indentation--;
+      this.pushSeparator(SeparatorType.ARRAY_END);
+    }
   }
 
   /**
@@ -330,7 +383,23 @@ export interface IJsonLdSerializerOptions {
   useRdfType?: boolean;
   /**
    * If literals should be converted to primitive types, such as booleans and integers.
-   * Defaults to false;
+   * Defaults to false.
    */
   useNativeTypes?: boolean;
+  /**
+   * An optional base IRI for compacting terms.
+   * Defaults to null.
+   */
+  baseIRI?: string;
+  /**
+   * An optional JSON-LD context for compacting terms.
+   * Defaults to null.
+   */
+  context?: JsonLdContext;
+  /**
+   * If the context should not be serialized, even if one was supplied.
+   * This can be used if the context will be attached to the document through alternative means.
+   * Defaults to false.
+   */
+  excludeContext?: boolean;
 }

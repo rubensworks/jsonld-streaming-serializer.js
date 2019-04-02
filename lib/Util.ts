@@ -1,3 +1,5 @@
+import {ContextParser} from "jsonld-context-parser";
+import {IJsonLdContextNormalized} from "jsonld-context-parser/lib/JsonLdContext";
 import * as RDF from "rdf-js";
 
 /**
@@ -13,15 +15,18 @@ export class Util {
   /**
    * Convert an RDF term to a JSON value.
    * @param {Term} term An RDF term.
+   * @param {IJsonLdContextNormalized} context The context.
    * @param {ITermToValueOptions} options Conversion options.
    * @return {any} A JSON value.
    */
-  public static termToValue(term: RDF.Term, options: ITermToValueOptions = {
+  public static termToValue(term: RDF.Term, context: IJsonLdContextNormalized, options: ITermToValueOptions = {
     compactIds: false,
     useNativeTypes: false,
   }): any {
     switch (term.termType) {
     case 'NamedNode':
+      const compacted = ContextParser.compactTerm(term.value, context, options.vocab);
+      return options.compactIds ? compacted : { '@id': compacted };
     case 'DefaultGraph':
       return options.compactIds ? term.value : { '@id': term.value };
     case 'BlankNode':
@@ -93,7 +98,12 @@ export interface ITermToValueOptions {
   compactIds?: boolean;
   /**
    * If literals should be converted to primitive types, such as booleans and integers.
-   * Defaults to false;
+   * Defaults to false.
    */
   useNativeTypes?: boolean;
+  /**
+   * If vocab-mode should be used for term compacting.
+   * Defaults to false.
+   */
+  vocab?: boolean;
 }
