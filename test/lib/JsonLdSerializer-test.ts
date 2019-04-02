@@ -925,7 +925,7 @@ describe('JsonLdSerializer', () => {
         triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('abc')),
         triple(namedNode('http://ex.org/myid1'), namedNode('http://ex.org/pred1'), literal('def')),
       ];
-      return expect(JSON.parse(await stringifyStream(streamifyArray(quads).pipe(serializer)))).toEqual([
+      return expect(JSON.parse(await stringifyStream(serializer.import(streamifyArray(quads))))).toEqual([
         {
           "@id": "http://ex.org/myid1",
           "http://ex.org/pred1": [
@@ -941,7 +941,7 @@ describe('JsonLdSerializer', () => {
         triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred1'), literal('abc')),
         triple(namedNode('http://ex.org/myid2'), namedNode('http://ex.org/pred1'), literal('def')),
       ];
-      return expect(JSON.parse(await stringifyStream(streamifyArray(quads).pipe(serializer)))).toEqual([
+      return expect(JSON.parse(await stringifyStream(serializer.import(streamifyArray(quads))))).toEqual([
         {
           "@id": "http://ex.org/myid2",
           "http://ex.org/pred1": [
