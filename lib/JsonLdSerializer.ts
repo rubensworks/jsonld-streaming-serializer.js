@@ -9,7 +9,6 @@ import {ITermToValueOptions, Util} from "./Util";
 export class JsonLdSerializer extends Transform {
 
   private readonly options: IJsonLdSerializerOptions;
-  private readonly useRdfType: boolean;
 
   private indentation: number;
   private opened: boolean;
