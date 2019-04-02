@@ -25,7 +25,7 @@ export class Util {
   }): any {
     switch (term.termType) {
     case 'NamedNode':
-      const compacted = ContextParser.compactTerm(term.value, context, options.vocab);
+      const compacted = ContextParser.compactIri(term.value, context, options.vocab);
       return options.compactIds ? compacted : { '@id': compacted };
     case 'DefaultGraph':
       return options.compactIds ? term.value : { '@id': term.value };

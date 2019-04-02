@@ -218,7 +218,7 @@ export class JsonLdSerializer extends Transform {
    */
   protected pushId(term: RDF.Term, context: IJsonLdContextNormalized) {
     const subjectValue = term.termType === 'BlankNode'
-      ? '_:' + term.value : ContextParser.compactTerm(term.value, context, false);
+      ? '_:' + term.value : ContextParser.compactIri(term.value, context, false);
     this.pushSeparator(SeparatorType.OBJECT_START);
     this.indentation++;
     this.pushIndented(`"@id": "${subjectValue}",`);
@@ -239,7 +239,7 @@ export class JsonLdSerializer extends Transform {
     }
 
     // Open array for following objects
-    this.pushIndented(`"${ContextParser.compactTerm(property, context, true)}": [`);
+    this.pushIndented(`"${ContextParser.compactIri(property, context, true)}": [`);
     this.indentation++;
 
     this.lastPredicate = predicate;
