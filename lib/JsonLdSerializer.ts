@@ -1,6 +1,7 @@
 import EventEmitter = NodeJS.EventEmitter;
 import * as RDF from "rdf-js";
 import {PassThrough, Transform, TransformCallback} from "stream";
+import {SeparatorType} from "./SeparatorType";
 import {ITermToValueOptions, Util} from "./Util";
 
 /**
@@ -39,11 +40,18 @@ export class JsonLdSerializer extends Transform {
     return parsed;
   }
 
+  /**
+   * Transforms a quad into the text stream.
+   * @param {Quad} quad An RDF quad.
+   * @param {string} encoding An (ignored) encoding.
+   * @param {module:stream.internal.TransformCallback} callback Callback that is invoked when the transformation is done
+   * @private
+   */
   public _transform(quad: RDF.Quad, encoding: string, callback: TransformCallback): void {
     // Open the array before the first quad
     if (!this.opened) {
       this.opened = true;
-      this.pushIndented(`[`);
+      this.pushSeparator(SeparatorType.ARRAY_START);
       this.indentation++;
     }
 
@@ -52,45 +60,20 @@ export class JsonLdSerializer extends Transform {
       if (this.lastGraph) {
         if (this.lastGraph.termType !== 'DefaultGraph') {
           // The last graph was named
-
-          // Close the predicate array
-          this.indentation--;
-          this.pushIndented(`]`);
-          // Close the last subject's node;
-          this.indentation--;
-          this.pushIndented(`}`);
-          // Close the graph array
-          this.indentation--;
-          this.pushIndented(`]`);
-          // Close the graph id node
-          this.indentation--;
-          this.pushIndented(`},`);
+          this.endPredicate();
+          this.endSubject();
+          this.endGraph(true);
         } else {
           // The last graph was default
-
-          // Close the predicate array
-          this.indentation--;
-          this.pushIndented(`]`);
-          // Close the last subject's node;
-          this.indentation--;
-          this.pushIndented(`},`);
+          this.endPredicate();
+          this.endSubject(true);
         }
-
-        // Reset object buffer
-        this.hadObjectForPredicate = false;
-        this.objectOptions = null;
-
-        // Reset predicate buffer
-        this.lastPredicate = null;
-
-        // Reset subject buffer
-        this.lastSubject = null;
       }
 
       // Push the graph
       if (quad.graph.termType !== 'DefaultGraph') {
         this.pushId(quad.graph);
-        this.pushIndented(`"@graph": [`);
+        this.pushSeparator(SeparatorType.GRAPH_FIELD);
         this.indentation++;
       }
 
@@ -100,19 +83,8 @@ export class JsonLdSerializer extends Transform {
     // Write subject
     if (!this.lastSubject || !quad.subject.equals(this.lastSubject)) {
       if (this.lastSubject) {
-        // Close the predicate array
-        this.indentation--;
-        this.pushIndented(`]`);
-        // Close the last subject's node;
-        this.indentation--;
-        this.pushIndented(`},`);
-
-        // Reset object buffer
-        this.hadObjectForPredicate = false;
-        this.objectOptions = null;
-
-        // Reset predicate buffer
-        this.lastPredicate = null;
+        this.endPredicate();
+        this.endSubject(true);
       }
 
       // Open a new node for the new subject
@@ -123,92 +95,158 @@ export class JsonLdSerializer extends Transform {
     // Write predicate
     if (!this.lastPredicate || !quad.predicate.equals(this.lastPredicate)) {
       if (this.lastPredicate) {
-        // Close the last predicate's array
-        this.indentation--;
-        this.pushIndented(`],`);
+        this.endPredicate(true);
       }
 
       // Open a new array for the new predicate
-      this.lastPredicate = quad.predicate;
-      this.hadObjectForPredicate = false;
-      this.objectOptions = null;
       this.pushPredicate(quad.predicate);
     }
 
     // Write the object value
-    this.pushObject(quad.object, this.objectOptions || this.options);
+    this.pushObject(quad.object);
 
     return callback();
   }
 
+  /**
+   * Claled when the incoming stream is closed.
+   * @param {module:stream.internal.TransformCallback} callback Callback that is invoked when the flushing is done.
+   * @private
+   */
   public _flush(callback: TransformCallback): void {
     // If the stream was empty, ensure that we push the opening array
     if (!this.opened) {
-      this.pushIndented(`[`);
+      this.pushSeparator(SeparatorType.ARRAY_START);
       this.indentation++;
     }
 
     if (this.lastPredicate) {
-      // Close predicate array
-      this.lastPredicate = null;
-      this.hadObjectForPredicate = false;
-      this.indentation--;
-      this.pushIndented(`]`);
+      this.endPredicate();
     }
     if (this.lastSubject) {
-      // Close the subject node
-      this.lastSubject = null;
-      this.indentation--;
-      this.pushIndented(`}`);
+      this.endSubject();
     }
     if (this.lastGraph && this.lastGraph.termType !== 'DefaultGraph') {
-      // Close the graph node
-      this.lastGraph = null;
-      this.indentation--;
-      this.pushIndented(`]`);
-      this.indentation--;
-      this.pushIndented(`}`);
+      this.endGraph();
     }
 
     this.indentation--;
-    this.pushIndented(`]`);
+    this.pushSeparator(SeparatorType.ARRAY_END);
     return callback(null, null);
   }
 
+  /**
+   * Push the given term as an @id field.
+   * @param {Term} term An RDF term.
+   */
   protected pushId(term: RDF.Term) {
     const subjectValue = term.termType === 'BlankNode' ? '_:' + term.value : term.value;
-    this.pushIndented(`{`);
+    this.pushSeparator(SeparatorType.OBJECT_START);
     this.indentation++;
     this.pushIndented(`"@id": "${subjectValue}",`);
   }
 
+  /**
+   * Push the given predicate field.
+   * @param {Term} predicate An RDF term.
+   */
   protected pushPredicate(predicate: RDF.Term) {
     let property = predicate.value;
 
+    // Convert rdf:type into @type if not disabled.
     if (!this.options.useRdfType && property === Util.RDF_TYPE) {
       property = '@type';
       this.objectOptions = { ...this.options, compactIds: true };
     }
 
+    // Open array for following objects
     this.pushIndented(`"${property}": [`);
     this.indentation++;
+
+    this.lastPredicate = predicate;
   }
 
-  protected pushObject(object: RDF.Term, options: ITermToValueOptions) {
+  /**
+   * Push the given object value.
+   * @param {Term} object An RDF term.
+   */
+  protected pushObject(object: RDF.Term) {
+    // Add a comma if we already had an object for this predicate
     if (!this.hadObjectForPredicate) {
       this.hadObjectForPredicate = true;
     } else {
-      this.pushIndented(`,`);
+      this.pushSeparator(SeparatorType.COMMA);
     }
+
+    // Convert the object into a value and push it
     let value;
     try {
-      value = Util.termToValue(object, options);
+      value = Util.termToValue(object, this.objectOptions || this.options);
     } catch (e) {
       return this.emit('error', e);
     }
     this.pushIndented(`${JSON.stringify(value, null, this.options.space)}`);
   }
 
+  /**
+   * Push the end of a predicate and reset the buffers.
+   * @param {boolean} comma If a comma should be appended.
+   */
+  protected endPredicate(comma?: boolean) {
+    // Close the predicate array
+    this.indentation--;
+    this.pushSeparator(comma ? SeparatorType.ARRAY_END_COMMA : SeparatorType.ARRAY_END);
+
+    // Reset object buffer
+    this.hadObjectForPredicate = false;
+    this.objectOptions = null;
+
+    // Reset predicate buffer
+    this.lastPredicate = null;
+  }
+
+  /**
+   * Push the end of a subject and reset the buffers.
+   * @param {boolean} comma If a comma should be appended.
+   */
+  protected endSubject(comma?: boolean) {
+    // Close the last subject's node;
+    this.indentation--;
+    this.pushSeparator(comma ? SeparatorType.OBJECT_END_COMMA : SeparatorType.OBJECT_END);
+
+    // Reset subject buffer
+    this.lastSubject = null;
+  }
+
+  /**
+   * Push the end of a graph and reset the buffers.
+   * @param {boolean} comma If a comma should be appended.
+   */
+  protected endGraph(comma?: boolean) {
+    // Close the graph array
+    this.indentation--;
+    this.pushSeparator(SeparatorType.ARRAY_END);
+    // Close the graph id node
+    this.indentation--;
+    this.pushSeparator(comma ? SeparatorType.OBJECT_END_COMMA : SeparatorType.OBJECT_END);
+
+    // Reset graph buffer
+    this.lastGraph = null;
+  }
+
+  /**
+   * Puh the given separator.
+   * @param {SeparatorType} type A type of separator.
+   */
+  protected pushSeparator(type: SeparatorType) {
+    this.pushIndented( type.label);
+  }
+
+  /**
+   * An indentation-aware variant of {@link #push}.
+   * All strings that are pushed here will be prefixed by {@link #indentation} amount of spaces.
+   * @param {string} data A string.
+   */
   protected pushIndented(data: string) {
     const prefix = this.getIndentPrefix();
     const lines = data.split('\n').map((line) => prefix + line).join('\n');
@@ -218,6 +256,9 @@ export class JsonLdSerializer extends Transform {
     }
   }
 
+  /**
+   * @return {string} Get the current indentation prefix based on {@link #indentation}.
+   */
   protected getIndentPrefix(): string {
     return this.options.space ? this.options.space.repeat(this.indentation) : '';
   }
