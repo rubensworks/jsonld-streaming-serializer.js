@@ -55,24 +55,43 @@ export class JsonLdSerializer extends Transform {
       this.indentation++;
     }
 
+    // Check if the subject equals the last named graph
+    // In that case, we can reuse the already-existing @id node
+    const lastGraphMatchesSubject = this.lastGraph && this.lastGraph.termType !== 'DefaultGraph'
+      && this.lastGraph.equals(quad.subject);
+
     // Write graph
-    if (!this.lastGraph || !quad.graph.equals(this.lastGraph)) {
+    if (!lastGraphMatchesSubject && (!this.lastGraph || !quad.graph.equals(this.lastGraph))) {
+      // Check if the named graph equals the last subject
+      // In that case, we can reuse the already-existing @id node
+      let lastSubjectMatchesGraph = quad.graph.termType !== 'DefaultGraph'
+        && this.lastSubject && this.lastSubject.equals(quad.graph);
+
       if (this.lastGraph) {
         if (this.lastGraph.termType !== 'DefaultGraph') {
           // The last graph was named
           this.endPredicate();
           this.endSubject();
           this.endGraph(true);
+
+          lastSubjectMatchesGraph = false; // Special-case to avoid deeper nesting
         } else {
           // The last graph was default
-          this.endPredicate();
-          this.endSubject(true);
+          if (!lastSubjectMatchesGraph) {
+            this.endPredicate();
+            this.endSubject(true);
+          } else {
+            this.endPredicate(true);
+            this.lastSubject = null;
+          }
         }
       }
 
       // Push the graph
       if (quad.graph.termType !== 'DefaultGraph') {
-        this.pushId(quad.graph);
+        if (!lastSubjectMatchesGraph) {
+          this.pushId(quad.graph);
+        }
         this.pushSeparator(SeparatorType.GRAPH_FIELD);
         this.indentation++;
       }
@@ -82,13 +101,21 @@ export class JsonLdSerializer extends Transform {
 
     // Write subject
     if (!this.lastSubject || !quad.subject.equals(this.lastSubject)) {
-      if (this.lastSubject) {
+      if (lastGraphMatchesSubject) {
         this.endPredicate();
-        this.endSubject(true);
-      }
+        this.endSubject();
+        this.indentation--;
+        this.pushSeparator(SeparatorType.ARRAY_END_COMMA);
+        this.lastGraph = quad.graph;
+      } else {
+        if (this.lastSubject) {
+          this.endPredicate();
+          this.endSubject(true);
+        }
 
-      // Open a new node for the new subject
-      this.pushId(quad.subject);
+        // Open a new node for the new subject
+        this.pushId(quad.subject);
+      }
       this.lastSubject = quad.subject;
     }
 

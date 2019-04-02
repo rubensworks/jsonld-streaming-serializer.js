@@ -493,6 +493,291 @@ describe('JsonLdSerializer', () => {
       ]);
   });
 
+  it('should serialize a quad with graph equal to last subject', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "http://ex.org/pred1": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize a quad with graph equal to last subject followed by another triple in that graph', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph1')),
+      quad(namedNode('http://ex.org/mysubject'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1'), namedNode('http://ex.org/mygraph1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "http://ex.org/pred1": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+            {
+              "@id": "http://ex.org/mysubject",
+              "http://ex.org/pred1": [
+                { "@id": "http://ex.org/obj1" },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize a quad with graph equal to last subject followed by another triple', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph1')),
+      triple(namedNode('http://ex.org/mysubject'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "http://ex.org/pred1": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+        },
+        {
+          "@id": "http://ex.org/mysubject",
+          "http://ex.org/pred1": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize a triple with subject equal to last named graph', async () => {
+    const quads = [
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph1')),
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+          "http://ex.org/pred1": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize a quad with graph equal to last and next subject', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph1')),
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "http://ex.org/pred1": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+          "http://ex.org/pred2": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize a triple with subject equal to last named graph followed by another quad', async () => {
+    const quads = [
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph1')),
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph2')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+          "http://ex.org/pred1": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+        },
+        {
+          "@id": "http://ex.org/mygraph2",
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize a quad with graph equal to last subject, followed by another quad', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph2')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/mygraph1",
+          "http://ex.org/pred1": [
+            { "@id": "http://ex.org/obj1" },
+          ],
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+        },
+        {
+          "@id": "http://ex.org/mygraph2",
+          "@graph": [
+            {
+              "@id": "_:b2",
+              "http://ex.org/pred2": [
+                { "@id": "http://ex.org/obj2" },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize a complex mix of triples and quads', async () => {
+    const quads = [
+      triple(namedNode('http://data.wikipedia.org/snaks/Assertions'),
+        namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+        namedNode('http://data.wikipedia.org/vocab#SnakSet')),
+      triple(namedNode('http://data.wikipedia.org/snaks/Assertions'),
+        namedNode('http://data.wikipedia.org/vocab#assertedBy'),
+        literal('http://gregkellogg.net/foaf#me')),
+      quad(namedNode('http://data.wikipedia.org/snaks/BerlinFact'),
+        namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+        namedNode('http://data.wikipedia.org/vocab#Snak'),
+        namedNode('http://data.wikipedia.org/snaks/Assertions')),
+      quad(namedNode('http://data.wikipedia.org/snaks/BerlinFact'),
+        namedNode('http://data.wikipedia.org/vocab#assertedBy'),
+        literal('http://www.statistik-berlin-brandenburg.de/'),
+        namedNode('http://data.wikipedia.org/snaks/Assertions')),
+      quad(namedNode('http://en.wikipedia.org/wiki/Berlin'),
+        namedNode('http://data.wikipedia.org/vocab#population'),
+        literal('3499879', namedNode('http://www.w3.org/2001/XMLSchema#integer')),
+        namedNode('http://data.wikipedia.org/snaks/BerlinFact')),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://data.wikipedia.org/snaks/Assertions",
+          "@type": ["http://data.wikipedia.org/vocab#SnakSet"],
+          "http://data.wikipedia.org/vocab#assertedBy": [
+            { "@value": "http://gregkellogg.net/foaf#me" },
+          ],
+          "@graph": [
+            {
+              "@id": "http://data.wikipedia.org/snaks/BerlinFact",
+              "@type": ["http://data.wikipedia.org/vocab#Snak"],
+              "http://data.wikipedia.org/vocab#assertedBy": [
+                { "@value": "http://www.statistik-berlin-brandenburg.de/" },
+              ],
+            },
+          ],
+        },
+        {
+          "@id": "http://data.wikipedia.org/snaks/BerlinFact",
+          "@graph": [
+            {
+              "@id": "http://en.wikipedia.org/wiki/Berlin",
+              "http://data.wikipedia.org/vocab#population": [
+                {
+                  "@value": "3499879",
+                  "@type": "http://www.w3.org/2001/XMLSchema#integer",
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+  });
+
   async function serialize(quadsArray, customSerializer?) {
     return JSON.parse(await stringifyStream(streamifyArray(quadsArray).pipe(customSerializer || serializer)));
   }
@@ -686,6 +971,118 @@ describe('JsonLdSerializer with pretty-printing', () => {
             "@id": "http://ex.org/obj1"
           }
         ]
+      }
+    ]
+  },
+  {
+    "@id": "http://ex.org/mygraph2",
+    "@graph": [
+      {
+        "@id": "_:b2",
+        "http://ex.org/pred2": [
+          {
+            "@id": "http://ex.org/obj2"
+          }
+        ]
+      }
+    ]
+  }
+]
+`);
+  });
+
+  it('should serialize a quad with graph equal to last subject', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph1')),
+    ];
+    return expect(await serialize(quads)).toEqual(`[
+  {
+    "@id": "http://ex.org/mygraph1",
+    "http://ex.org/pred1": [
+      {
+        "@id": "http://ex.org/obj1"
+      }
+    ],
+    "@graph": [
+      {
+        "@id": "_:b2",
+        "http://ex.org/pred2": [
+          {
+            "@id": "http://ex.org/obj2"
+          }
+        ]
+      }
+    ]
+  }
+]
+`);
+  });
+
+  it('should serialize a quad with graph equal to last and next subject', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph1')),
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    return expect(await serialize(quads)).toEqual(`[
+  {
+    "@id": "http://ex.org/mygraph1",
+    "http://ex.org/pred1": [
+      {
+        "@id": "http://ex.org/obj1"
+      }
+    ],
+    "@graph": [
+      {
+        "@id": "_:b2",
+        "http://ex.org/pred2": [
+          {
+            "@id": "http://ex.org/obj2"
+          }
+        ]
+      }
+    ],
+    "http://ex.org/pred2": [
+      {
+        "@id": "http://ex.org/obj1"
+      }
+    ]
+  }
+]
+`);
+  });
+
+  it('should serialize a triple with subject equal to last named graph followed by another quad', async () => {
+    const quads = [
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph1')),
+      triple(namedNode('http://ex.org/mygraph1'), namedNode('http://ex.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+      quad(blankNode('b2'), namedNode('http://ex.org/pred2'),
+        namedNode('http://ex.org/obj2'), namedNode('http://ex.org/mygraph2')),
+    ];
+    return expect(await serialize(quads)).toEqual(`[
+  {
+    "@id": "http://ex.org/mygraph1",
+    "@graph": [
+      {
+        "@id": "_:b2",
+        "http://ex.org/pred2": [
+          {
+            "@id": "http://ex.org/obj2"
+          }
+        ]
+      }
+    ],
+    "http://ex.org/pred1": [
+      {
+        "@id": "http://ex.org/obj1"
       }
     ]
   },
