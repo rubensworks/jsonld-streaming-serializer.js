@@ -1331,6 +1331,19 @@ describe('JsonLdSerializer with pretty-printing', () => {
 `);
   });
 
+  it('should serialize a triple with a context compactly', async () => {
+    const quads = [
+      triple(namedNode('http://ex.org/myid1'), namedNode('http://type.org/pred1'),
+        namedNode('http://ex.org/obj1')),
+    ];
+    const context = {
+      "@base": "http://ex.org/",
+      "@vocab": "http://type.org/",
+    };
+    // tslint:disable-next-line:max-line-length
+    return expect(await serialize(quads, new JsonLdSerializer({ context }))).toEqual(`{"@context":{"@base":"http://ex.org/","@vocab":"http://type.org/"},"@graph":[{"@id":"myid1","pred1":[{"@id":"obj1"}]}]}`);
+  });
+
   async function serialize(quadsArray, customSerializer?) {
     return await stringifyStream(streamifyArray(quadsArray).pipe(customSerializer || serializer));
   }

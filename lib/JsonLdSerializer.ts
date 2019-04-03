@@ -154,7 +154,8 @@ export class JsonLdSerializer extends Transform {
         if (!lastSubjectMatchesGraph) {
           this.pushId(quad.graph, context);
         }
-        this.pushSeparator(SeparatorType.GRAPH_FIELD);
+        this.pushSeparator(this.options.space
+          ? SeparatorType.GRAPH_FIELD_NONCOMPACT : SeparatorType.GRAPH_FIELD_COMPACT);
         this.indentation++;
       }
 
@@ -203,7 +204,8 @@ export class JsonLdSerializer extends Transform {
       this.indentation++;
       this.pushSeparator(SeparatorType.CONTEXT_FIELD);
       this.pushIndented(JSON.stringify(this.originalContext, null, this.options.space) + ',');
-      this.pushSeparator(SeparatorType.GRAPH_FIELD);
+      this.pushSeparator(this.options.space
+        ? SeparatorType.GRAPH_FIELD_NONCOMPACT : SeparatorType.GRAPH_FIELD_COMPACT);
       this.indentation++;
     } else {
       this.pushSeparator(SeparatorType.ARRAY_START);
@@ -221,7 +223,7 @@ export class JsonLdSerializer extends Transform {
       ? '_:' + term.value : ContextParser.compactIri(term.value, context, false);
     this.pushSeparator(SeparatorType.OBJECT_START);
     this.indentation++;
-    this.pushIndented(`"@id": "${subjectValue}",`);
+    this.pushIndented(this.options.space ? `"@id": "${subjectValue}",` : `"@id":"${subjectValue}",`);
   }
 
   /**
@@ -239,7 +241,8 @@ export class JsonLdSerializer extends Transform {
     }
 
     // Open array for following objects
-    this.pushIndented(`"${ContextParser.compactIri(property, context, true)}": [`);
+    const compactedProperty = ContextParser.compactIri(property, context, true);
+    this.pushIndented(this.options.space ? `"${compactedProperty}": [` : `"${compactedProperty}":[`);
     this.indentation++;
 
     this.lastPredicate = predicate;
