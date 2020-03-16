@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/rubensworks/jsonld-streaming-serializer.js.svg?branch=master)](https://travis-ci.org/rubensworks/jsonld-streaming-serializer.js)
 [![Coverage Status](https://coveralls.io/repos/github/rubensworks/jsonld-streaming-serializer.js/badge.svg?branch=master)](https://coveralls.io/github/rubensworks/jsonld-streaming-serializer.js?branch=master)
-[![npm version](https://badge.fury.io/js/jsonld-streaming-serializer.svg)](https://www.npmjs.com/package/jsonld-streaming-serializer) [![Greenkeeper badge](https://badges.greenkeeper.io/rubensworks/jsonld-streaming-serializer.js.svg)](https://greenkeeper.io/)
+[![npm version](https://badge.fury.io/js/jsonld-streaming-serializer.svg)](https://www.npmjs.com/package/jsonld-streaming-serializer)
 
 A fast and lightweight _streaming_ [JSON-LD](https://json-ld.org/) serializer,
 with [RDFJS](https://github.com/rdfjs/representation-task-force/) representations of RDF terms, quads and triples.
