@@ -77,9 +77,9 @@ describe('Util', () => {
     });
 
     it('should handle xsd:decimal', async () => {
-      expect(Util.stringToNativeType('0.0', 'http://www.w3.org/2001/XMLSchema#decimal')).toEqual(0.0);
-      expect(Util.stringToNativeType('10.10', 'http://www.w3.org/2001/XMLSchema#decimal')).toEqual(10.10);
-      expect(Util.stringToNativeType('1.2345E2', 'http://www.w3.org/2001/XMLSchema#decimal')).toEqual(123.45);
+      expect(Util.stringToNativeType('0.0', 'http://www.w3.org/2001/XMLSchema#decimal')).toEqual('0.0');
+      expect(Util.stringToNativeType('10.10', 'http://www.w3.org/2001/XMLSchema#decimal')).toEqual('10.10');
+      expect(Util.stringToNativeType('1.2345E2', 'http://www.w3.org/2001/XMLSchema#decimal')).toEqual('1.2345E2');
     });
 
     it('should handle xsd:float', async () => {
@@ -216,6 +216,12 @@ describe('Util', () => {
     it('should handle string literals with number datatype with useNativeTypes true', async () => {
       return expect(Util.termToValue(literal('10', namedNode('http://www.w3.org/2001/XMLSchema#number')), new JsonLdContextNormalized({}),
         { useNativeTypes: true })).toEqual({ '@value': 10 });
+    });
+
+    it('should handle string literals with decimal datatype with useNativeTypes true', async () => {
+      return expect(Util.termToValue(literal('10', namedNode('http://www.w3.org/2001/XMLSchema#decimal')), new JsonLdContextNormalized({}),
+        { useNativeTypes: true })).toEqual(
+          { '@value': '10', '@type': 'http://www.w3.org/2001/XMLSchema#decimal' });
     });
 
     it('should handle string literals with JSON datatype', async () => {

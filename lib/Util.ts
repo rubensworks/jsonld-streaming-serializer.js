@@ -83,7 +83,6 @@ export class Util {
         }
         return parsedInt;
       case 'float':
-      case 'decimal':
       case 'double':
         const parsedFloat = parseFloat(value);
         if (isNaN(parsedFloat)) {
