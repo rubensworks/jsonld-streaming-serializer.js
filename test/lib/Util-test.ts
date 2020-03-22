@@ -217,6 +217,13 @@ describe('Util', () => {
       return expect(Util.termToValue(literal('10', namedNode('http://www.w3.org/2001/XMLSchema#number')), new JsonLdContextNormalized({}),
         { useNativeTypes: true })).toEqual({ '@value': 10 });
     });
+
+    it('should handle string literals with JSON datatype', async () => {
+      return expect(Util.termToValue(literal('true', namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
+        .toEqual({ '@value': true, '@type': '@json' });
+      return expect(Util.termToValue(literal('{"a":"b"}', namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
+        .toEqual({ '@value': { a: 'b' }, '@type': '@json' });
+    });
   });
 
 });

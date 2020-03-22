@@ -10,6 +10,7 @@ export class Util {
   public static readonly XSD_STRING: string = Util.XSD + 'string';
   public static readonly RDF: string = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
   public static readonly RDF_TYPE: string = Util.RDF + 'type';
+  public static readonly RDF_JSON: string = Util.RDF + 'JSON';
 
   /**
    * Convert an RDF term to a JSON value.
@@ -32,6 +33,12 @@ export class Util {
       const id = `_:${term.value}`;
       return options.compactIds ? id : { '@id': id };
     case 'Literal':
+      if (term.datatype.value === Util.RDF_JSON) {
+        return {
+          '@value': JSON.parse(term.value),
+          '@type': '@json',
+        };
+      }
       const stringType = term.datatype.value === Util.XSD_STRING;
       const rawValue = {
         '@value': !stringType && options.useNativeTypes
