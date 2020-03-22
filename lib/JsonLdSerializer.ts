@@ -1,5 +1,5 @@
 import EventEmitter = NodeJS.EventEmitter;
-import {ContextParser, IJsonLdContextNormalized, JsonLdContext} from "jsonld-context-parser";
+import {ContextParser, JsonLdContextNormalized, JsonLdContext} from "jsonld-context-parser";
 import * as RDF from "rdf-js";
 import {PassThrough, Transform, TransformCallback} from "stream";
 import {SeparatorType} from "./SeparatorType";
@@ -12,7 +12,7 @@ export class JsonLdSerializer extends Transform {
 
   private readonly options: IJsonLdSerializerOptions;
   private readonly originalContext: JsonLdContext;
-  private readonly context: Promise<IJsonLdContextNormalized>;
+  private readonly context: Promise<JsonLdContextNormalized>;
 
   private indentation: number;
   private opened: boolean;
@@ -34,9 +34,9 @@ export class JsonLdSerializer extends Transform {
     }
     if (this.options.context) {
       this.originalContext = this.options.context;
-      this.context = new ContextParser().parse(this.options.context, { baseIri: this.options.baseIRI });
+      this.context = new ContextParser().parse(this.options.context, { baseIRI: this.options.baseIRI });
     } else {
-      this.context = Promise.resolve({});
+      this.context = Promise.resolve(new JsonLdContextNormalized({}));
     }
   }
 
@@ -75,9 +75,10 @@ export class JsonLdSerializer extends Transform {
    * @param {Term[]} values A list of values, can be empty.
    * @return {Term} A term that should be used in the object position of the quad that is written to the serializer.
    */
-  public list(values: RDF.Term[]): RDF.Term {
+  public async list(values: RDF.Term[]): Promise<RDF.Term> {
+    const context = await this.context;
     return <RDF.Term> <any> {
-      '@list': values.map((value) => Util.termToValue(value, this.options)),
+      '@list': values.map((value) => Util.termToValue(value, context, this.options)),
     };
   }
 
@@ -109,9 +110,9 @@ export class JsonLdSerializer extends Transform {
   /**
    * Transforms a quad into the text stream.
    * @param {Quad} quad An RDF quad.
-   * @param {IJsonLdContextNormalized} context A context for compacting.
+   * @param {JsonLdContextNormalized} context A context for compacting.
    */
-  protected transformQuad(quad: RDF.Quad, context: IJsonLdContextNormalized): void {
+  protected transformQuad(quad: RDF.Quad, context: JsonLdContextNormalized): void {
     // Open the array before the first quad
     if (!this.opened) {
       this.pushDocumentStart();
@@ -216,11 +217,11 @@ export class JsonLdSerializer extends Transform {
   /**
    * Push the given term as an @id field.
    * @param {Term} term An RDF term.
-   * @param {IJsonLdContextNormalized} context The context.
+   * @param {JsonLdContextNormalized} context The context.
    */
-  protected pushId(term: RDF.Term, context: IJsonLdContextNormalized) {
+  protected pushId(term: RDF.Term, context: JsonLdContextNormalized) {
     const subjectValue = term.termType === 'BlankNode'
-      ? '_:' + term.value : ContextParser.compactIri(term.value, context, false);
+      ? '_:' + term.value : context.compactIri(term.value, false);
     this.pushSeparator(SeparatorType.OBJECT_START);
     this.indentation++;
     this.pushIndented(this.options.space ? `"@id": "${subjectValue}",` : `"@id":"${subjectValue}",`);
@@ -229,9 +230,9 @@ export class JsonLdSerializer extends Transform {
   /**
    * Push the given predicate field.
    * @param {Term} predicate An RDF term.
-   * @param {IJsonLdContextNormalized} context The context.
+   * @param {JsonLdContextNormalized} context The context.
    */
-  protected pushPredicate(predicate: RDF.Term, context: IJsonLdContextNormalized) {
+  protected pushPredicate(predicate: RDF.Term, context: JsonLdContextNormalized) {
     let property = predicate.value;
 
     // Convert rdf:type into @type if not disabled.
@@ -241,7 +242,7 @@ export class JsonLdSerializer extends Transform {
     }
 
     // Open array for following objects
-    const compactedProperty = ContextParser.compactIri(property, context, true);
+    const compactedProperty = context.compactIri(property, true);
     this.pushIndented(this.options.space ? `"${compactedProperty}": [` : `"${compactedProperty}":[`);
     this.indentation++;
 
@@ -251,9 +252,9 @@ export class JsonLdSerializer extends Transform {
   /**
    * Push the given object value.
    * @param {Term} object An RDF term.
-   * @param {IJsonLdContextNormalized} context The context.
+   * @param {JsonLdContextNormalized} context The context.
    */
-  protected pushObject(object: RDF.Term, context: IJsonLdContextNormalized) {
+  protected pushObject(object: RDF.Term, context: JsonLdContextNormalized) {
     // Add a comma if we already had an object for this predicate
     if (!this.hadObjectForPredicate) {
       this.hadObjectForPredicate = true;

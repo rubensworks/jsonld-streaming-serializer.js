@@ -962,7 +962,7 @@ describe('JsonLdSerializer', () => {
   describe('list', () => {
     it('should emit an empty list in a triple', async () => {
       serializer.write(quad(namedNode('http://ex.org/subj1'), namedNode('http://ex.org/pred1'),
-        serializer.list([])));
+        await serializer.list([])));
       serializer.end();
       return expect(JSON.parse(await stringifyStream(serializer))).toEqual([
         {
@@ -978,7 +978,7 @@ describe('JsonLdSerializer', () => {
 
     it('should emit a list with named nodes in a triple', async () => {
       serializer.write(quad(namedNode('http://ex.org/subj1'), namedNode('http://ex.org/pred1'),
-        serializer.list([
+        await serializer.list([
           namedNode('a'),
           namedNode('b'),
         ])));
@@ -1000,7 +1000,7 @@ describe('JsonLdSerializer', () => {
 
     it('should emit a list with literals in a triple', async () => {
       serializer.write(quad(namedNode('http://ex.org/subj1'), namedNode('http://ex.org/pred1'),
-        serializer.list([
+        await serializer.list([
           literal('a'),
           literal('b'),
         ])));

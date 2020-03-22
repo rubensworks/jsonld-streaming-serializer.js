@@ -1,5 +1,4 @@
-import {ContextParser} from "jsonld-context-parser";
-import {IJsonLdContextNormalized} from "jsonld-context-parser/lib/JsonLdContext";
+import {JsonLdContextNormalized} from "jsonld-context-parser";
 import * as RDF from "rdf-js";
 
 /**
@@ -15,17 +14,17 @@ export class Util {
   /**
    * Convert an RDF term to a JSON value.
    * @param {Term} term An RDF term.
-   * @param {IJsonLdContextNormalized} context The context.
+   * @param {JsonLdContextNormalized} context The context.
    * @param {ITermToValueOptions} options Conversion options.
    * @return {any} A JSON value.
    */
-  public static termToValue(term: RDF.Term, context: IJsonLdContextNormalized, options: ITermToValueOptions = {
+  public static termToValue(term: RDF.Term, context: JsonLdContextNormalized, options: ITermToValueOptions = {
     compactIds: false,
     useNativeTypes: false,
   }): any {
     switch (term.termType) {
     case 'NamedNode':
-      const compacted = ContextParser.compactIri(term.value, context, options.vocab);
+      const compacted = context.compactIri(term.value, options.vocab);
       return options.compactIds ? compacted : { '@id': compacted };
     case 'DefaultGraph':
       return options.compactIds ? term.value : { '@id': term.value };

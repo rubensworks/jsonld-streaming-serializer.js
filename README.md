@@ -107,7 +107,7 @@ mySerializer.pipe(process.stdout);
 mySerializer.write(dataFactory.triple(
   dataFactory.namedNode('http://ex.org/s1'),
   dataFactory.namedNode('http://ex.org/p1'),
-  mySerializer.list([
+  await mySerializer.list([
     dataFactory.namedNode('http://ex.org/o1'),
     dataFactory.namedNode('http://ex.org/o2'),
     dataFactory.namedNode('http://ex.org/o3'),
