@@ -230,6 +230,23 @@ describe('Util', () => {
       return expect(Util.termToValue(literal('{"a":"b"}', namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
         .toEqual({ '@value': { a: 'b' }, '@type': '@json' });
     });
+
+    it('should handle string literals with I18N datatype', async () => {
+      return expect(Util.termToValue(literal('bla', namedNode('https://www.w3.org/ns/i18n#en-us_rtl')), new JsonLdContextNormalized({}))).toEqual(
+        { '@value': 'bla', '@type': 'https://www.w3.org/ns/i18n#en-us_rtl' });
+    });
+
+    it('should handle string literals with I18N datatype with rdfDirection: i18n-datatype', async () => {
+      expect(Util.termToValue(literal('bla', namedNode('https://www.w3.org/ns/i18n#en-us_rtl')), new JsonLdContextNormalized({}),
+        { rdfDirection: 'i18n-datatype' })).toEqual(
+        { '@value': 'bla', '@language': 'en-us', '@direction': 'rtl' });
+      expect(Util.termToValue(literal('bla', namedNode('https://www.w3.org/ns/i18n#_rtl')), new JsonLdContextNormalized({}),
+        { rdfDirection: 'i18n-datatype' })).toEqual(
+        { '@value': 'bla', '@direction': 'rtl' });
+      expect(Util.termToValue(literal('bla', namedNode('https://www.w3.org/ns/i18n#en-us_')), new JsonLdContextNormalized({}),
+        { rdfDirection: 'i18n-datatype' })).toEqual(
+        { '@value': 'bla', '@language': 'en-us' });
+    });
   });
 
 });

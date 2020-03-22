@@ -11,6 +11,7 @@ export class Util {
   public static readonly RDF: string = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
   public static readonly RDF_TYPE: string = Util.RDF + 'type';
   public static readonly RDF_JSON: string = Util.RDF + 'JSON';
+  public static readonly I18N: string = 'https://www.w3.org/ns/i18n#';
 
   /**
    * Convert an RDF term to a JSON value.
@@ -33,12 +34,26 @@ export class Util {
       const id = `_:${term.value}`;
       return options.compactIds ? id : { '@id': id };
     case 'Literal':
+      // Handle JSON datatype
       if (term.datatype.value === Util.RDF_JSON) {
         return {
           '@value': JSON.parse(term.value),
           '@type': '@json',
         };
       }
+
+      // Handle rdfDirection: i18n-datatype
+      if (options.rdfDirection === 'i18n-datatype' && term.datatype.value.startsWith(Util.I18N)) {
+        const [language, direction] = term.datatype.value
+          .substr(Util.I18N.length, term.datatype.value.length)
+          .split('_');
+        return {
+          '@value': term.value,
+          ...language ? { '@language': language } : {},
+          ...direction ? { '@direction': direction } : {},
+        };
+      }
+
       const stringType = term.datatype.value === Util.XSD_STRING;
       const rawValue = {
         '@value': !stringType && options.useNativeTypes
@@ -111,4 +126,10 @@ export interface ITermToValueOptions {
    * Defaults to false.
    */
   vocab?: boolean;
+  /**
+   * The mode by which the values with a certain base direction should be transformed from RDF.
+   * * 'i18n-datatype': objects have a https://www.w3.org/ns/i18n# datatype.
+   * * 'compound-literal': reified values using rdf:value, rdf:direction and rdf:language.
+   */
+  rdfDirection?: 'i18n-datatype' | 'compound-literal';
 }

@@ -406,4 +406,10 @@ export interface IJsonLdSerializerOptions {
    * Defaults to false.
    */
   excludeContext?: boolean;
+  /**
+   * The mode by which the values with a certain base direction should be transformed from RDF.
+   * * 'i18n-datatype': objects have a https://www.w3.org/ns/i18n# datatype.
+   * * 'compound-literal': reified values using rdf:value, rdf:direction and rdf:language.
+   */
+  rdfDirection?: 'i18n-datatype' | 'compound-literal';
 }
