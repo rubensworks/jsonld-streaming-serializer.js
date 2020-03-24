@@ -1,4 +1,4 @@
-import {JsonLdContextNormalized} from "jsonld-context-parser";
+import {ERROR_CODES, ErrorCoded, JsonLdContextNormalized} from "jsonld-context-parser";
 import * as RDF from "rdf-js";
 
 /**
@@ -36,8 +36,14 @@ export class Util {
     case 'Literal':
       // Handle JSON datatype
       if (term.datatype.value === Util.RDF_JSON) {
+        let parsedJson: any;
+        try {
+          parsedJson = JSON.parse(term.value);
+        } catch (e) {
+          throw new ErrorCoded('Invalid JSON literal: ' + e.message, ERROR_CODES.INVALID_JSON_LITERAL);
+        }
         return {
-          '@value': JSON.parse(term.value),
+          '@value': parsedJson,
           '@type': '@json',
         };
       }

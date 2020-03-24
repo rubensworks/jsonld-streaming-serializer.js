@@ -1,6 +1,6 @@
 import {blankNode, defaultGraph, literal, namedNode} from "@rdfjs/data-model";
 import {Util} from "../../lib/Util";
-import {JsonLdContextNormalized} from "jsonld-context-parser";
+import {ERROR_CODES, ErrorCoded, JsonLdContextNormalized} from "jsonld-context-parser";
 
 describe('Util', () => {
 
@@ -246,6 +246,12 @@ describe('Util', () => {
       expect(Util.termToValue(literal('bla', namedNode('https://www.w3.org/ns/i18n#en-us_')), new JsonLdContextNormalized({}),
         { rdfDirection: 'i18n-datatype' })).toEqual(
         { '@value': 'bla', '@language': 'en-us' });
+    });
+
+    it('should throw on invalid string literals with JSON datatype', async () => {
+      return expect(() => Util.termToValue(literal('{', namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
+        .toThrow(new ErrorCoded('Invalid JSON literal: Unexpected end of JSON input',
+          ERROR_CODES.INVALID_JSON_LITERAL));
     });
   });
 
