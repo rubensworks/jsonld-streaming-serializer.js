@@ -154,13 +154,14 @@ const mySerializer = new JsonLdSerializer({
 
 ## Restrictions
 
-While this serializer outputs valid JSON-LD 1.0,
+While this serializer outputs valid JSON-LD 1.1,
 it does not fully comply with all the specification tests,
 as these assume non-streaming processing.
 
 As such, this serializer has the following restrictions:
 
 * RDF lists are not converted to `@list` arrays. However, the `list()` helper method can be manually called to achieve this.
+* `rdfDirection: 'compound-literal'` is not supported, as this may require keeping the whole stream in-memory.
 * No deduplication of triples, as this would require keeping the whole stream in-memory.
 
 ## Configuration
