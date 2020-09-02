@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.1"></a>
+## [v1.1.1](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v1.1.0...v1.1.1) - 2020-09-02
+
+### Fixed
+* [Fix import causing large streams to terminate early](https://github.com/rubensworks/jsonld-streaming-serializer.js/commit/754086694e2e0ce652a55e863e6cad0d974ed4a3)
+
 <a name="v1.1.0"></a>
 ## [v1.1.0](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v1.0.1...v1.1.0) - 2020-04-03
 
