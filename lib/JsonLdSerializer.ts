@@ -48,8 +48,8 @@ export class JsonLdSerializer extends Transform {
   public import(stream: EventEmitter): EventEmitter {
     const output = new PassThrough({ objectMode: true });
     stream.on('error', (error) => parsed.emit('error', error));
-    stream.on('data', (data) => output.write(data));
-    stream.on('end', () => output.emit('end'));
+    stream.on('data', (data) => output.push(data));
+    stream.on('end', () => output.push(null));
     const parsed = output.pipe(new JsonLdSerializer(this.options));
     return parsed;
   }
