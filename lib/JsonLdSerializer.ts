@@ -72,12 +72,12 @@ export class JsonLdSerializer extends Transform {
    * Construct a list in an RDF.Term object that can be used
    * inside a quad's object to write into the serializer
    * as a list using the @list keyword.
-   * @param {Term[]} values A list of values, can be empty.
-   * @return {Term} A term that should be used in the object position of the quad that is written to the serializer.
+   * @param {RDF.Quad_Object[]} values A list of values, can be empty.
+   * @return {RDF.Quad_Object} A term that should be used in the object position of the quad that is written to the serializer.
    */
-  public async list(values: RDF.Term[]): Promise<RDF.Term> {
+  public async list(values: RDF.Term[]): Promise<RDF.Quad_Object> {
     const context = await this.context;
-    return <RDF.Term> <any> {
+    return <RDF.Quad_Object> <any> {
       '@list': values.map((value) => Util.termToValue(value, context, this.options)),
     };
   }
