@@ -1,6 +1,6 @@
 # JSON-LD Streaming Serializer
 
-[![Build Status](https://travis-ci.org/rubensworks/jsonld-streaming-serializer.js.svg?branch=master)](https://travis-ci.org/rubensworks/jsonld-streaming-serializer.js)
+[![Build status](https://github.com/rubensworks/jsonld-streaming-serializer.js/workflows/CI/badge.svg)](https://github.com/rubensworks/jsonld-streaming-serializer.js/actions?query=workflow%3ACI)
 [![Coverage Status](https://coveralls.io/repos/github/rubensworks/jsonld-streaming-serializer.js/badge.svg?branch=master)](https://coveralls.io/github/rubensworks/jsonld-streaming-serializer.js?branch=master)
 [![npm version](https://badge.fury.io/js/jsonld-streaming-serializer.svg)](https://www.npmjs.com/package/jsonld-streaming-serializer)
 
