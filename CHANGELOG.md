@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.3.0"></a>
+## [v1.3.0](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v1.2.0...v1.3.0) - 2021-08-11
+
+### Changed
+* [Migrate to @rdfjs/types](https://github.com/rubensworks/jsonld-streaming-serializer.js/commit/368d260d35569116c0cc90012ba3a21bf62d7909)
+
 <a name="v1.2.0"></a>
 ## [v1.2.0](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v1.1.1...v1.2.0) - 2020-09-15
 
