@@ -1,5 +1,5 @@
 import {ERROR_CODES, ErrorCoded, JsonLdContextNormalized} from "jsonld-context-parser";
-import * as RDF from "rdf-js";
+import * as RDF from "@rdfjs/types";
 
 /**
  * Utility functions and methods.

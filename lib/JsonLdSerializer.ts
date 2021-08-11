@@ -1,6 +1,6 @@
 import EventEmitter = NodeJS.EventEmitter;
 import {ContextParser, JsonLdContextNormalized, JsonLdContext} from "jsonld-context-parser";
-import * as RDF from "rdf-js";
+import * as RDF from "@rdfjs/types";
 import {PassThrough, Transform, TransformCallback} from "stream";
 import {SeparatorType} from "./SeparatorType";
 import {ITermToValueOptions, Util} from "./Util";

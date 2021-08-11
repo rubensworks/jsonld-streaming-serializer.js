@@ -29,7 +29,7 @@
     "index.js"
   ],
   "dependencies": {
-    "@types/rdf-js": "*",
+    "@rdfjs/types": "*",
     "jsonld-context-parser": "^2.0.0"
   },
   "pre-commit": [
@@ -41,21 +41,20 @@
     "@types/jest": "^26.0.0",
     "@types/jest-each": "^24.3.0",
     "@types/node": "^13.1.0",
-    "@types/rdf-js": "^4.0.0",
     "coveralls": "^3.0.0",
     "jest": "^26.0.0",
     "jest-each": "^26.0.0",
-    "jest-rdf": "^1.6.0",
+    "jest-rdf": "^1.7.0",
     "manual-git-changelog": "^1.0.1",
     "pre-commit": "^1.2.2",
-    "rdf-data-factory": "^1.0.2",
+    "rdf-data-factory": "^1.1.0",
     "rdf-test-suite": "^1.13.4",
     "stream-to-string": "^1.2.0",
     "streamify-array": "^1.0.1",
     "ts-jest": "^26.0.0",
     "tslint": "^6.0.0",
     "tslint-eslint-rules": "^5.3.1",
-    "typescript": "^4.0.0"
+    "typescript": "^4.3.5"
   },
   "jest": {
     "globals": {
