@@ -1,9 +1,9 @@
 import EventEmitter = NodeJS.EventEmitter;
 import {ContextParser, JsonLdContextNormalized, JsonLdContext} from "jsonld-context-parser";
 import * as RDF from "@rdfjs/types";
-import {PassThrough, Transform, TransformCallback} from "stream";
 import {SeparatorType} from "./SeparatorType";
 import {ITermToValueOptions, Util} from "./Util";
+import {PassThrough, Transform} from "readable-stream";
 
 /**
  * A stream transformer that transforms an {@link RDF.Stream} into a JSON-LD (text) stream.
@@ -61,7 +61,7 @@ export class JsonLdSerializer extends Transform {
    * @param {module:stream.internal.TransformCallback} callback Callback that is invoked when the transformation is done
    * @private
    */
-  public _transform(quad: RDF.Quad, encoding: string, callback: TransformCallback): void {
+  public _transform(quad: RDF.Quad, encoding: string, callback: (error?: Error | null, data?: any) => void): void {
     this.context.then((context) => {
       this.transformQuad(quad, context);
       callback();
@@ -83,11 +83,11 @@ export class JsonLdSerializer extends Transform {
   }
 
   /**
-   * Claled when the incoming stream is closed.
+   * Called when the incoming stream is closed.
    * @param {module:stream.internal.TransformCallback} callback Callback that is invoked when the flushing is done.
    * @private
    */
-  public _flush(callback: TransformCallback): void {
+  public _flush(callback: (error?: Error | null, data?: any) => void): void {
     // If the stream was empty, ensure that we push the opening array
     if (!this.opened) {
       this.pushDocumentStart();
