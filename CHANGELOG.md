@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.0.0"></a>
+## [v2.0.0](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v1.3.0...v2.0.0) - 2022-07-14
+
+This release has been marked as a major change due to the transition from Node's internal `stream` API to `readable-stream`.
+Most users should experience not breakages with this change.
+
+### Changed
+* [Enable tree shaking in package.json](https://github.com/rubensworks/jsonld-streaming-serializer.js/commit/7b46dce47e9a558b83c1eddd709ace9291d4e23b)
+* [Move away from Node.js built-ins](https://github.com/rubensworks/jsonld-streaming-serializer.js/commit/6fd35465d20dcbc3d947dd0e9fa0610cf20d6c61)
+
 <a name="v1.3.0"></a>
 ## [v1.3.0](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v1.2.0...v1.3.0) - 2021-08-11
 
