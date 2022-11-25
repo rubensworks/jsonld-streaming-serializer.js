@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.1.0"></a>
+## [v2.1.0](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v2.0.1...v2.1.0) - 2022-11-25
+
+### Added
+* [Serialize nested quads as JSON-LD-star embedded nodes, Closes #35](https://github.com/rubensworks/jsonld-streaming-serializer.js/commit/96349966e95161418d2dc5a7f0949d99422b531d)
+
 <a name="v2.0.1"></a>
 ## [v2.0.1](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v2.0.0...v2.0.1) - 2022-11-09
 
