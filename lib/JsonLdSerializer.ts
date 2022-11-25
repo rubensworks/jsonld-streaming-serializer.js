@@ -153,7 +153,7 @@ export class JsonLdSerializer extends Transform {
       // Push the graph
       if (quad.graph.termType !== 'DefaultGraph') {
         if (!lastSubjectMatchesGraph) {
-          this.pushId(quad.graph, context);
+          this.pushId(quad.graph, true, context);
         }
         this.pushSeparator(this.options.space
           ? SeparatorType.GRAPH_FIELD_NONCOMPACT : SeparatorType.GRAPH_FIELD_COMPACT);
@@ -178,7 +178,7 @@ export class JsonLdSerializer extends Transform {
         }
 
         // Open a new node for the new subject
-        this.pushId(quad.subject, context);
+        this.pushId(quad.subject, true, context);
       }
       this.lastSubject = quad.subject;
     }
@@ -217,14 +217,26 @@ export class JsonLdSerializer extends Transform {
   /**
    * Push the given term as an @id field.
    * @param {Term} term An RDF term.
+   * @param startOnNewLine If `{` should start on a new line
    * @param {JsonLdContextNormalized} context The context.
    */
-  protected pushId(term: RDF.Term, context: JsonLdContextNormalized) {
-    const subjectValue = term.termType === 'BlankNode'
-      ? '_:' + term.value : context.compactIri(term.value, false);
-    this.pushSeparator(SeparatorType.OBJECT_START);
-    this.indentation++;
-    this.pushIndented(this.options.space ? `"@id": "${subjectValue}",` : `"@id":"${subjectValue}",`);
+  protected pushId(term: RDF.Term, startOnNewLine: boolean, context: JsonLdContextNormalized) {
+    if (term.termType === 'Quad') {
+      this.pushNestedQuad(term, true, context);
+    } else {
+      const subjectValue = term.termType === 'BlankNode'
+        ? '_:' + term.value : context.compactIri(term.value, false);
+      if (startOnNewLine) {
+        this.pushSeparator(SeparatorType.OBJECT_START);
+      } else {
+        this.push(SeparatorType.OBJECT_START.label);
+        if (this.options.space) {
+          this.push('\n');
+        }
+      }
+      this.indentation++;
+      this.pushIndented(this.options.space ? `"@id": "${subjectValue}",` : `"@id":"${subjectValue}",`);
+    }
   }
 
   /**
@@ -262,6 +274,21 @@ export class JsonLdSerializer extends Transform {
       this.pushSeparator(SeparatorType.COMMA);
     }
 
+    // Handle nested quad
+    if (object.termType === 'Quad') {
+      const lastLastSubject = this.lastSubject;
+      const lastLastPredicate = this.lastPredicate;
+      this.hadObjectForPredicate = false;
+
+      this.pushNestedQuad(object, false, context);
+      this.endSubject(false); // Terminate identifier node of nested quad again, since we won't attach additional information to it.
+
+      this.hadObjectForPredicate = true;
+      this.lastPredicate = lastLastPredicate;
+      this.lastSubject = lastLastSubject;
+      return;
+    }
+
     // Convert the object into a value and push it
     let value;
     try {
@@ -274,6 +301,23 @@ export class JsonLdSerializer extends Transform {
       return this.emit('error', e);
     }
     this.pushIndented(JSON.stringify(value, null, this.options.space));
+  }
+
+  protected pushNestedQuad(nestedQuad: RDF.BaseQuad, commaAfterSubject: boolean, context: JsonLdContextNormalized) {
+    // Start a nested quad
+    this.pushSeparator(SeparatorType.OBJECT_START);
+    this.indentation++;
+    this.pushIndented(this.options.space ? `"@id": ` : `"@id":`, false);
+
+    // Print the nested quad
+    if (nestedQuad.graph.termType !== 'DefaultGraph') {
+      this.emit('error', new Error(`Found a nested quad with the non-default graph: ${nestedQuad.graph.value}`));
+    }
+    this.pushId(nestedQuad.subject, false, context);
+    this.pushPredicate(nestedQuad.predicate, context);
+    this.pushObject(nestedQuad.object, context);
+    this.endPredicate(false);
+    this.endSubject(commaAfterSubject);
   }
 
   protected endDocument() {
@@ -340,19 +384,20 @@ export class JsonLdSerializer extends Transform {
    * @param {SeparatorType} type A type of separator.
    */
   protected pushSeparator(type: SeparatorType) {
-    this.pushIndented( type.label);
+    this.pushIndented(type.label);
   }
 
   /**
    * An indentation-aware variant of {@link #push}.
    * All strings that are pushed here will be prefixed by {@link #indentation} amount of spaces.
    * @param {string} data A string.
+   * @param pushNewLine If a newline should be pushed afterwards.
    */
-  protected pushIndented(data: string) {
+  protected pushIndented(data: string, pushNewLine: boolean = true) {
     const prefix = this.getIndentPrefix();
     const lines = data.split('\n').map((line) => prefix + line).join('\n');
     this.push(lines);
-    if (this.options.space) {
+    if (this.options.space && pushNewLine) {
       this.push('\n');
     }
   }

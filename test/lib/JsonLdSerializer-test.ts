@@ -917,6 +917,267 @@ describe('JsonLdSerializer', () => {
       });
   });
 
+  it('should serialize with a quad as subject', async () => {
+    const quads = [
+      DF.quad(
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/alice'),
+        ),
+        DF.namedNode('http://ex.org/certainty'),
+        DF.literal('0.8'),
+      ),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": {
+            "@id": "http://ex.org/bob",
+            "http://ex.org/knows": [
+              { "@id": "http://ex.org/alice" },
+            ],
+          },
+          "http://ex.org/certainty": [
+            { "@value": "0.8" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize two quads with the same quad as subject', async () => {
+    const quads = [
+      DF.quad(
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/alice'),
+        ),
+        DF.namedNode('http://ex.org/certainty'),
+        DF.literal('0.8'),
+      ),
+      DF.quad(
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/alice'),
+        ),
+        DF.namedNode('http://ex.org/createdBy'),
+        DF.namedNode('http://ex.org/alice'),
+      ),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": {
+            "@id": "http://ex.org/bob",
+            "http://ex.org/knows": [
+              { "@id": "http://ex.org/alice" },
+            ],
+          },
+          "http://ex.org/certainty": [
+            { "@value": "0.8" },
+          ],
+          "http://ex.org/createdBy": [
+            { "@id": "http://ex.org/alice" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize two quads with the different quad as subject', async () => {
+    const quads = [
+      DF.quad(
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/alice'),
+        ),
+        DF.namedNode('http://ex.org/certainty'),
+        DF.literal('0.8'),
+      ),
+      DF.quad(
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/carol'),
+        ),
+        DF.namedNode('http://ex.org/createdBy'),
+        DF.namedNode('http://ex.org/alice'),
+      ),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": {
+            "@id": "http://ex.org/bob",
+            "http://ex.org/knows": [
+              { "@id": "http://ex.org/alice" },
+            ],
+          },
+          "http://ex.org/certainty": [
+            { "@value": "0.8" },
+          ],
+        },
+        {
+          "@id": {
+            "@id": "http://ex.org/bob",
+            "http://ex.org/knows": [
+              { "@id": "http://ex.org/carol" },
+            ],
+          },
+          "http://ex.org/createdBy": [
+            { "@id": "http://ex.org/alice" },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize with a quad as object', async () => {
+    const quads = [
+      DF.quad(
+        DF.namedNode('http://ex.org/bob'),
+        DF.namedNode('http://ex.org/claims'),
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/alice'),
+        ),
+      ),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/bob",
+          "http://ex.org/claims": [
+            {
+              "@id": {
+                "@id": "http://ex.org/bob",
+                "http://ex.org/knows": [
+                  { "@id": "http://ex.org/alice" },
+                ],
+              },
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize two unrelated nested quads', async () => {
+    const quads = [
+      DF.quad(
+        DF.namedNode('http://ex.org/bob'),
+        DF.namedNode('http://ex.org/claims'),
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/alice'),
+        ),
+      ),
+      DF.quad(
+        DF.namedNode('http://ex.org/carol'),
+        DF.namedNode('http://ex.org/claims'),
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/alice'),
+        ),
+      ),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/bob",
+          "http://ex.org/claims": [
+            {
+              "@id": {
+                "@id": "http://ex.org/bob",
+                "http://ex.org/knows": [
+                  { "@id": "http://ex.org/alice" },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          "@id": "http://ex.org/carol",
+          "http://ex.org/claims": [
+            {
+              "@id": {
+                "@id": "http://ex.org/bob",
+                "http://ex.org/knows": [
+                  { "@id": "http://ex.org/alice" },
+                ],
+              },
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should serialize two related nested quads', async () => {
+    const quads = [
+      DF.quad(
+        DF.namedNode('http://ex.org/bob'),
+        DF.namedNode('http://ex.org/claims'),
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/alice'),
+        ),
+      ),
+      DF.quad(
+        DF.namedNode('http://ex.org/bob'),
+        DF.namedNode('http://ex.org/claims'),
+        DF.quad(
+          DF.namedNode('http://ex.org/alice'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/bob'),
+        ),
+      ),
+    ];
+    return expect(await serialize(quads)).toEqual(
+      [
+        {
+          "@id": "http://ex.org/bob",
+          "http://ex.org/claims": [
+            {
+              "@id": {
+                "@id": "http://ex.org/bob",
+                "http://ex.org/knows": [
+                  { "@id": "http://ex.org/alice" },
+                ],
+              },
+            },
+            {
+              "@id": {
+                "@id": "http://ex.org/alice",
+                "http://ex.org/knows": [
+                  { "@id": "http://ex.org/bob" },
+                ],
+              },
+            },
+          ],
+        },
+      ]);
+  });
+
+  it('should fail to serialize nested quads in the non-default graph', async () => {
+    const quads = [
+      DF.quad(
+        DF.namedNode('http://ex.org/bob'),
+        DF.namedNode('http://ex.org/claims'),
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/alice'),
+          DF.namedNode('http://ex.org/illegal-graph'),
+        ),
+      ),
+    ];
+    return expect(serialize(quads)).rejects.toThrow(new Error('Found a nested quad with the non-default graph: http://ex.org/illegal-graph'));
+  });
+
   async function serialize(quadsArray, customSerializer?) {
     return JSON.parse(await stringifyStream(streamifyArray(quadsArray).pipe(customSerializer || serializer)));
   }
@@ -1344,6 +1605,70 @@ describe('JsonLdSerializer with pretty-printing', () => {
     };
     // tslint:disable-next-line:max-line-length
     return expect(await serialize(quads, new JsonLdSerializer({ context }))).toEqual(`{"@context":{"@base":"http://ex.org/","@vocab":"http://type.org/"},"@graph":[{"@id":"myid1","pred1":[{"@id":"obj1"}]}]}`);
+  });
+
+  it('should serialize a quad as subject', async () => {
+    const quads = [
+      DF.quad(
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/alice'),
+        ),
+        DF.namedNode('http://ex.org/certainty'),
+        DF.literal('0.8'),
+      ),
+    ];
+    return expect(await serialize(quads)).toEqual(`[
+  {
+    "@id": {
+      "@id": "http://ex.org/bob",
+      "http://ex.org/knows": [
+        {
+          "@id": "http://ex.org/alice"
+        }
+      ]
+    },
+    "http://ex.org/certainty": [
+      {
+        "@value": "0.8"
+      }
+    ]
+  }
+]
+`);
+  });
+
+  it('should serialize with a quad as object', async () => {
+    const quads = [
+      DF.quad(
+        DF.namedNode('http://ex.org/bob'),
+        DF.namedNode('http://ex.org/claims'),
+        DF.quad(
+          DF.namedNode('http://ex.org/bob'),
+          DF.namedNode('http://ex.org/knows'),
+          DF.namedNode('http://ex.org/alice'),
+        ),
+      ),
+    ];
+    return expect(await serialize(quads)).toEqual(`[
+  {
+    "@id": "http://ex.org/bob",
+    "http://ex.org/claims": [
+      {
+        "@id": {
+          "@id": "http://ex.org/bob",
+          "http://ex.org/knows": [
+            {
+              "@id": "http://ex.org/alice"
+            }
+          ]
+        }
+      }
+    ]
+  }
+]
+`);
   });
 
   async function serialize(quadsArray, customSerializer?) {

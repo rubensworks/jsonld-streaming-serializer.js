@@ -154,7 +154,7 @@ const mySerializer = new JsonLdSerializer({
 
 ## Restrictions
 
-While this serializer outputs valid JSON-LD 1.1,
+While this serializer outputs valid JSON-LD 1.1 and JSON-LD-star,
 it does not fully comply with all the specification tests,
 as these assume non-streaming processing.
 
