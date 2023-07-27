@@ -1035,10 +1035,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/readable-stream@^2.3.13":
-  version "2.3.15"
-  resolved "https://registry.yarnpkg.com/@types/readable-stream/-/readable-stream-2.3.15.tgz#3d79c9ceb1b6a57d5f6e6976f489b9b5384321ae"
-  integrity sha512-oM5JSKQCcICF1wvGgmecmHldZ48OZamtMxcGGVICOJA8o8cahXC1zEVAif8iwoc5j8etxFaRFnf095+CDsuoFQ==
+"@types/readable-stream@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@types/readable-stream/-/readable-stream-4.0.0.tgz#9bcb888b9c77478b02490365d3e0c34fd8b6d5ae"
+  integrity sha512-s6YqDV111kwuFsT9SwFC+FmZ5n1SEp4H9DXGg6Zqag0lPGeEvBGP9UaLJYpX4cxY7fAFnx2avy1QVvft0LLb7g==
   dependencies:
     "@types/node" "*"
     safe-buffer "~5.1.1"
