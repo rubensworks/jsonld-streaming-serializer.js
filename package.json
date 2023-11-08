@@ -32,7 +32,7 @@
   ],
   "dependencies": {
     "@rdfjs/types": "*",
-    "@types/readable-stream": "^2.3.13",
+    "@types/readable-stream": "^4.0.0",
     "buffer": "^6.0.3",
     "jsonld-context-parser": "^2.0.0",
     "readable-stream": "^4.0.0"
