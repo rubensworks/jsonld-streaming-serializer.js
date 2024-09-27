@@ -38,7 +38,7 @@
     "@rdfjs/types": "*",
     "@types/readable-stream": "^2.3.13",
     "buffer": "^6.0.3",
-    "jsonld-context-parser": "^2.0.0",
+    "jsonld-context-parser": "^3.0.0",
     "readable-stream": "^4.0.0"
   },
   "pre-commit": [
