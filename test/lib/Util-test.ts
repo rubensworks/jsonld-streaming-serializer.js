@@ -249,9 +249,14 @@ describe('Util', () => {
     });
 
     it('should throw on invalid string literals with JSON datatype', async () => {
-      return expect(() => Util.termToValue(literal('{', namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
-        .toThrow(new ErrorCoded('Invalid JSON literal: Unexpected end of JSON input',
-          ERROR_CODES.INVALID_JSON_LITERAL));
+      expect(() => Util.termToValue(literal('{', namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
+        .toThrow('Invalid JSON literal');
+      try {
+        Util.termToValue(literal('{', namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({}));
+      } catch(e) {
+        expect(e).toBeInstanceOf(ErrorCoded);
+        expect(e.code).toEqual(ERROR_CODES.INVALID_JSON_LITERAL);
+      }
     });
   });
 

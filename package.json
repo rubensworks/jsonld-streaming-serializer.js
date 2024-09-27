@@ -109,5 +109,6 @@
     "spec-earl-fromrdf-star": "rdf-test-suite spec/serializer.js https://json-ld.github.io/json-ld-star/tests/fromRdf-manifest.jsonld -c .rdf-test-suite-cache/ -o earl -p spec/earl-meta.json > spec/earl-fromrdf-star.ttl",
     "spec-clean": "rm -r .rdf-test-suite-cache/"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
 }
