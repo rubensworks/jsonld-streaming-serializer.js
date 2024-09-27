@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.1"></a>
+## [v3.0.1](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v3.0.0...v3.0.1) - 2024-09-27
+
+### Changed
+* [Update dependency @types/readable-stream to v4](https://github.com/rubensworks/jsonld-streaming-serializer.js/commit/210106aeba7b26ed20fab260be12e85aa2a12e4d)
+
 <a name="v3.0.0"></a>
 ## [v3.0.0](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v2.1.0...v3.0.0) - 2024-09-27
 
