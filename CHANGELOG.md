@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.0"></a>
+## [v3.0.0](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v2.1.0...v3.0.0) - 2024-09-27
+
+### BREAKING CHANGE
+* [Update to jsonld-context-parser v3](https://github.com/rubensworks/jsonld-streaming-serializer.js/commit/df0bbbe287b2b20ca284b1c06ce1b83a9f682b48). This is not a breaking change for users of Node 18+
+
 <a name="v2.1.0"></a>
 ## [v2.1.0](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v2.0.1...v2.1.0) - 2022-11-25
 

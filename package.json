@@ -1,6 +1,6 @@
 {
   "name": "jsonld-streaming-serializer",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "A fast and lightweight streaming JSON-LD serializer",
   "keywords": [
     "json",
