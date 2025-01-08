@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.0.0"></a>
+## [v4.0.0](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v3.0.1...v4.0.0) - 2025-01-08
+
+### BREAKING CHANGES
+* [Make RDF 1.2 literals with base direction output as @direction](https://github.com/rubensworks/jsonld-streaming-serializer.js/commit/c119ce44165180e8583320dc9a0578dd58401485)
+* [Update to rdf-data-factory v2](https://github.com/rubensworks/jsonld-streaming-serializer.js/commit/586fc7ba75e5005b7444e7dd741ca9d437ca4f1f)
+    This includes a bump to @rdfjs/types@2.0.0, which requires TypeScript 5 and Node 14+
+
 <a name="v3.0.1"></a>
 ## [v3.0.1](https://github.com/rubensworks/jsonld-streaming-serializer.js/compare/v3.0.0...v3.0.1) - 2024-09-27
 
