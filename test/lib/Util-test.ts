@@ -1,6 +1,8 @@
-import {blankNode, defaultGraph, literal, namedNode} from "@rdfjs/data-model";
+import { DataFactory } from "rdf-data-factory";
 import {Util} from "../../lib/Util";
 import {ERROR_CODES, ErrorCoded, JsonLdContextNormalized} from "jsonld-context-parser";
+
+const DF = new DataFactory();
 
 describe('Util', () => {
 
@@ -91,168 +93,173 @@ describe('Util', () => {
 
   describe('termToValue', () => {
     it('should handle named nodes', async () => {
-      return expect(Util.termToValue(namedNode('http://ex.org/'), new JsonLdContextNormalized({})))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/'), new JsonLdContextNormalized({})))
         .toEqual({ '@id': 'http://ex.org/' });
     });
 
     it('should handle named nodes with compactIds true', async () => {
-      return expect(Util.termToValue(namedNode('http://ex.org/'), new JsonLdContextNormalized({}), { compactIds: true }))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/'), new JsonLdContextNormalized({}), { compactIds: true }))
         .toEqual('http://ex.org/');
     });
 
     it('should handle named nodes without context vocab in vocab mode', async () => {
-      return expect(Util.termToValue(namedNode('http://ex.org/'), new JsonLdContextNormalized({}), { vocab: true }))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/'), new JsonLdContextNormalized({}), { vocab: true }))
         .toEqual({ '@id': 'http://ex.org/' });
     });
 
     it('should handle named nodes without context vocab in base mode', async () => {
-      return expect(Util.termToValue(namedNode('http://ex.org/'), new JsonLdContextNormalized({}), { vocab: false }))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/'), new JsonLdContextNormalized({}), { vocab: false }))
         .toEqual({ '@id': 'http://ex.org/' });
     });
 
     it('should handle named nodes with context vocab in vocab mode', async () => {
       const context = new JsonLdContextNormalized({ '@vocab': 'http://ex.org/' });
-      return expect(Util.termToValue(namedNode('http://ex.org/'), context, { vocab: true }))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/'), context, { vocab: true }))
         .toEqual({ '@id': '' });
     });
 
     it('should handle named nodes with context vocab in base mode', async () => {
       const context = new JsonLdContextNormalized({ '@vocab': 'http://ex.org/' });
-      return expect(Util.termToValue(namedNode('http://ex.org/'), context, { vocab: false }))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/'), context, { vocab: false }))
         .toEqual({ '@id': 'http://ex.org/' });
     });
 
     it('should handle named nodes with context base in vocab mode', async () => {
       const context = new JsonLdContextNormalized({ '@base': 'http://ex.org/' });
-      return expect(Util.termToValue(namedNode('http://ex.org/'), context, { vocab: true }))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/'), context, { vocab: true }))
         .toEqual({ '@id': 'http://ex.org/' });
     });
 
     it('should handle named nodes with context base in base mode', async () => {
       const context = new JsonLdContextNormalized({ '@base': 'http://ex.org/' });
-      return expect(Util.termToValue(namedNode('http://ex.org/'), context, { vocab: false }))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/'), context, { vocab: false }))
         .toEqual({ '@id': '' });
     });
 
     it('should handle named nodes with context term in vocab mode', async () => {
       const context = new JsonLdContextNormalized({ ex: 'http://ex.org/' });
-      return expect(Util.termToValue(namedNode('http://ex.org/'), context, { vocab: true }))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/'), context, { vocab: true }))
         .toEqual({ '@id': 'ex' });
     });
 
     it('should handle named nodes with context term in base mode', async () => {
       const context = new JsonLdContextNormalized({ ex: 'http://ex.org/' });
-      return expect(Util.termToValue(namedNode('http://ex.org/'), context, { vocab: false }))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/'), context, { vocab: false }))
         .toEqual({ '@id': 'http://ex.org/' });
     });
 
     it('should handle named nodes with context prefix in vocab mode', async () => {
       const context = new JsonLdContextNormalized({ ex: 'http://ex.org/' });
-      return expect(Util.termToValue(namedNode('http://ex.org/aa'), context, { vocab: true }))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/aa'), context, { vocab: true }))
         .toEqual({ '@id': 'ex:aa' });
     });
 
     it('should handle named nodes with context prefix in base mode', async () => {
       const context = new JsonLdContextNormalized({ ex: 'http://ex.org/' });
-      return expect(Util.termToValue(namedNode('http://ex.org/aa'), context, { vocab: false }))
+      return expect(Util.termToValue(DF.namedNode('http://ex.org/aa'), context, { vocab: false }))
         .toEqual({ '@id': 'ex:aa' });
     });
 
     it('should handle default graphs', async () => {
-      return expect(Util.termToValue(defaultGraph(), new JsonLdContextNormalized({})))
+      return expect(Util.termToValue(DF.defaultGraph(), new JsonLdContextNormalized({})))
         .toEqual({ '@id': '' });
     });
 
     it('should handle default graphs with compactIds true', async () => {
-      return expect(Util.termToValue(defaultGraph(), new JsonLdContextNormalized({}), { compactIds: true }))
+      return expect(Util.termToValue(DF.defaultGraph(), new JsonLdContextNormalized({}), { compactIds: true }))
         .toEqual('');
     });
 
     it('should handle blank nodes', async () => {
-      return expect(Util.termToValue(blankNode('b0'), new JsonLdContextNormalized({})))
+      return expect(Util.termToValue(DF.blankNode('b0'), new JsonLdContextNormalized({})))
         .toEqual({ '@id': '_:b0' });
     });
 
     it('should handle blank nodes with compactIds true', async () => {
-      return expect(Util.termToValue(blankNode('b0'), new JsonLdContextNormalized({}), { compactIds: true }))
+      return expect(Util.termToValue(DF.blankNode('b0'), new JsonLdContextNormalized({}), { compactIds: true }))
         .toEqual('_:b0');
     });
 
-    it('should handle literals without language and datatype with useNativeTypes false', async () => {
-      return expect(Util.termToValue(literal('abc'), new JsonLdContextNormalized({})))
+    it('should handle DF.literals without language and datatype with useNativeTypes false', async () => {
+      return expect(Util.termToValue(DF.literal('abc'), new JsonLdContextNormalized({})))
         .toEqual({ '@value': 'abc' });
     });
 
-    it('should handle literals without language and datatype with useNativeTypes true', async () => {
-      return expect(Util.termToValue(literal('abc'), new JsonLdContextNormalized({}), { useNativeTypes: true }))
+    it('should handle DF.literals without language and datatype with useNativeTypes true', async () => {
+      return expect(Util.termToValue(DF.literal('abc'), new JsonLdContextNormalized({}), { useNativeTypes: true }))
         .toEqual({ '@value': 'abc' });
     });
 
-    it('should handle literals with language with useNativeTypes false', async () => {
-      return expect(Util.termToValue(literal('abc', 'en'), new JsonLdContextNormalized({})))
+    it('should handle DF.literals with language with useNativeTypes false', async () => {
+      return expect(Util.termToValue(DF.literal('abc', 'en'), new JsonLdContextNormalized({})))
         .toEqual({ '@value': 'abc', '@language': 'en' });
     });
 
-    it('should handle literals with language with useNativeTypes true', async () => {
-      return expect(Util.termToValue(literal('abc', 'en'), new JsonLdContextNormalized({}), { useNativeTypes: true }))
+    it('should handle DF.literals with language with useNativeTypes true', async () => {
+      return expect(Util.termToValue(DF.literal('abc', 'en'), new JsonLdContextNormalized({}), { useNativeTypes: true }))
         .toEqual({ '@value': 'abc', '@language': 'en' });
     });
 
-    it('should handle string literals with unknown datatype with useNativeTypes false', async () => {
-      return expect(Util.termToValue(literal('abc', namedNode('http://ex.org/type')), new JsonLdContextNormalized({})))
+    it('should handle string DF.literals with unknown datatype with useNativeTypes false', async () => {
+      return expect(Util.termToValue(DF.literal('abc', DF.namedNode('http://ex.org/type')), new JsonLdContextNormalized({})))
         .toEqual({ '@value': 'abc', '@type': 'http://ex.org/type' });
     });
 
-    it('should handle string literals with unknown datatype with useNativeTypes true', async () => {
-      return expect(Util.termToValue(literal('abc', namedNode('http://ex.org/type')), new JsonLdContextNormalized({}), { useNativeTypes: true }))
+    it('should handle string DF.literals with unknown datatype with useNativeTypes true', async () => {
+      return expect(Util.termToValue(DF.literal('abc', DF.namedNode('http://ex.org/type')), new JsonLdContextNormalized({}), { useNativeTypes: true }))
         .toEqual({ '@value': 'abc', '@type': 'http://ex.org/type' });
     });
 
-    it('should handle string literals with number datatype with useNativeTypes false', async () => {
-      return expect(Util.termToValue(literal('10', namedNode('http://www.w3.org/2001/XMLSchema#number')), new JsonLdContextNormalized({})))
+    it('should handle string DF.literals with number datatype with useNativeTypes false', async () => {
+      return expect(Util.termToValue(DF.literal('10', DF.namedNode('http://www.w3.org/2001/XMLSchema#number')), new JsonLdContextNormalized({})))
         .toEqual({ '@value': '10', '@type': 'http://www.w3.org/2001/XMLSchema#number' });
     });
 
-    it('should handle string literals with number datatype with useNativeTypes true', async () => {
-      return expect(Util.termToValue(literal('10', namedNode('http://www.w3.org/2001/XMLSchema#number')), new JsonLdContextNormalized({}),
+    it('should handle string DF.literals with number datatype with useNativeTypes true', async () => {
+      return expect(Util.termToValue(DF.literal('10', DF.namedNode('http://www.w3.org/2001/XMLSchema#number')), new JsonLdContextNormalized({}),
         { useNativeTypes: true })).toEqual({ '@value': 10 });
     });
 
-    it('should handle string literals with decimal datatype with useNativeTypes true', async () => {
-      return expect(Util.termToValue(literal('10', namedNode('http://www.w3.org/2001/XMLSchema#decimal')), new JsonLdContextNormalized({}),
+    it('should handle string DF.literals with decimal datatype with useNativeTypes true', async () => {
+      return expect(Util.termToValue(DF.literal('10', DF.namedNode('http://www.w3.org/2001/XMLSchema#decimal')), new JsonLdContextNormalized({}),
         { useNativeTypes: true })).toEqual(
           { '@value': '10', '@type': 'http://www.w3.org/2001/XMLSchema#decimal' });
     });
 
-    it('should handle string literals with JSON datatype', async () => {
-      return expect(Util.termToValue(literal('true', namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
+    it('should handle string DF.literals with JSON datatype', async () => {
+      return expect(Util.termToValue(DF.literal('true', DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
         .toEqual({ '@value': true, '@type': '@json' });
-      return expect(Util.termToValue(literal('{"a":"b"}', namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
+      return expect(Util.termToValue(DF.literal('{"a":"b"}', DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
         .toEqual({ '@value': { a: 'b' }, '@type': '@json' });
     });
 
-    it('should handle string literals with I18N datatype', async () => {
-      return expect(Util.termToValue(literal('bla', namedNode('https://www.w3.org/ns/i18n#en-us_rtl')), new JsonLdContextNormalized({}))).toEqual(
+    it('should handle string DF.literals with I18N datatype', async () => {
+      return expect(Util.termToValue(DF.literal('bla', DF.namedNode('https://www.w3.org/ns/i18n#en-us_rtl')), new JsonLdContextNormalized({}))).toEqual(
         { '@value': 'bla', '@type': 'https://www.w3.org/ns/i18n#en-us_rtl' });
     });
 
-    it('should handle string literals with I18N datatype with rdfDirection: i18n-datatype', async () => {
-      expect(Util.termToValue(literal('bla', namedNode('https://www.w3.org/ns/i18n#en-us_rtl')), new JsonLdContextNormalized({}),
+    it('should handle string DF.literals with I18N datatype with rdfDirection: i18n-datatype', async () => {
+      expect(Util.termToValue(DF.literal('bla', DF.namedNode('https://www.w3.org/ns/i18n#en-us_rtl')), new JsonLdContextNormalized({}),
         { rdfDirection: 'i18n-datatype' })).toEqual(
         { '@value': 'bla', '@language': 'en-us', '@direction': 'rtl' });
-      expect(Util.termToValue(literal('bla', namedNode('https://www.w3.org/ns/i18n#_rtl')), new JsonLdContextNormalized({}),
+      expect(Util.termToValue(DF.literal('bla', DF.namedNode('https://www.w3.org/ns/i18n#_rtl')), new JsonLdContextNormalized({}),
         { rdfDirection: 'i18n-datatype' })).toEqual(
         { '@value': 'bla', '@direction': 'rtl' });
-      expect(Util.termToValue(literal('bla', namedNode('https://www.w3.org/ns/i18n#en-us_')), new JsonLdContextNormalized({}),
+      expect(Util.termToValue(DF.literal('bla', DF.namedNode('https://www.w3.org/ns/i18n#en-us_')), new JsonLdContextNormalized({}),
         { rdfDirection: 'i18n-datatype' })).toEqual(
         { '@value': 'bla', '@language': 'en-us' });
     });
 
-    it('should throw on invalid string literals with JSON datatype', async () => {
-      expect(() => Util.termToValue(literal('{', namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
+    it('should handle string DF.literals with base direction with rdfDirection: undefined', async () => {
+      expect(Util.termToValue(DF.literal('bla', { language: 'en-us', direction: 'rtl' }), new JsonLdContextNormalized({}))).toEqual(
+        { '@value': 'bla', '@language': 'en-us', '@direction': 'rtl' });
+    });
+
+    it('should throw on invalid string DF.literals with JSON datatype', async () => {
+      expect(() => Util.termToValue(DF.literal('{', DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({})))
         .toThrow('Invalid JSON literal');
       try {
-        Util.termToValue(literal('{', namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({}));
+        Util.termToValue(DF.literal('{', DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({}));
       } catch(e) {
         expect(e).toBeInstanceOf(ErrorCoded);
         expect(e.code).toEqual(ERROR_CODES.INVALID_JSON_LITERAL);

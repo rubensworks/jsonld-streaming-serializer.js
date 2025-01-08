@@ -174,7 +174,7 @@ Optionally, the following parameters can be set in the `JsonLdSerializer` constr
 * `excludeContext`: If a `context` or `baseIRI` is set, the context will be emitted into the output stream, unless this option is set to `true`. _(Default: `false`)_
 * `useRdfType`: An optional boolean indicating if rdf:type predicates should be emitted directly, instead of @type. _(Default: `false`)_
 * `useNativeTypes`: An optional boolean indicating if literals should be converted to primitive types, such as booleans and integers. _(Default: `false`)_
-* `rdfDirection`: The [mode](https://w3c.github.io/json-ld-api/#dom-jsonldoptions-rdfdirection) under which `@direction` should be handled. If undefined, `@direction` is ignored. Alternatively, it can be set to either `'i18n-datatype'` or `'compound-literal'` _(Default: `undefined`)_
+* `rdfDirection`: The [mode](https://w3c.github.io/json-ld-api/#dom-jsonldoptions-rdfdirection) under which `@direction` should be handled. If undefined, `@direction` is considered a regular RDF 1.2 literal with a base direction. Alternatively, it can be set to either `'i18n-datatype'` or `'compound-literal'` _(Default: `undefined`)_
 
 ```javascript
 new JsonLdSerializer({

@@ -66,6 +66,9 @@ export class Util {
           ? Util.stringToNativeType(term.value, term.datatype.value) : term.value,
       };
       if (term.language) {
+        if (term.direction && !options.rdfDirection) {
+          return { ...rawValue, '@language': term.language, '@direction': term.direction };
+        }
         return { ...rawValue, '@language': term.language };
       } else if (!stringType && typeof rawValue['@value'] === 'string') {
         return { ...rawValue, '@type': term.datatype.value };
