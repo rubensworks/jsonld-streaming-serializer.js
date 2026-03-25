@@ -262,7 +262,7 @@ describe('Util', () => {
         Util.termToValue(DF.literal('{', DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON')), new JsonLdContextNormalized({}));
       } catch(e) {
         expect(e).toBeInstanceOf(ErrorCoded);
-        expect(e.code).toEqual(ERROR_CODES.INVALID_JSON_LITERAL);
+        expect((<ErrorCoded> e).code).toEqual(ERROR_CODES.INVALID_JSON_LITERAL);
       }
     });
   });

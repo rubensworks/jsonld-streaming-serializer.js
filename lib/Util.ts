@@ -40,7 +40,7 @@ export class Util {
         try {
           parsedJson = JSON.parse(term.value);
         } catch (e) {
-          throw new ErrorCoded('Invalid JSON literal: ' + e.message, ERROR_CODES.INVALID_JSON_LITERAL);
+          throw new ErrorCoded('Invalid JSON literal: ' + (<Error> e).message, ERROR_CODES.INVALID_JSON_LITERAL);
         }
         return {
           '@value': parsedJson,

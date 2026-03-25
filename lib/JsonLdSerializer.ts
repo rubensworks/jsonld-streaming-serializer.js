@@ -11,16 +11,16 @@ import {PassThrough, Transform} from "readable-stream";
 export class JsonLdSerializer extends Transform {
 
   private readonly options: IJsonLdSerializerOptions;
-  private readonly originalContext: JsonLdContext;
+  private readonly originalContext: JsonLdContext | undefined;
   private readonly context: Promise<JsonLdContextNormalized>;
 
   private indentation: number;
-  private opened: boolean;
-  private lastSubject: RDF.Term;
-  private lastPredicate: RDF.Term;
-  private hadObjectForPredicate: boolean;
-  private objectOptions: ITermToValueOptions;
-  private lastGraph: RDF.Term;
+  private opened: boolean = false;
+  private lastSubject: RDF.Term | undefined;
+  private lastPredicate: RDF.Term | undefined;
+  private hadObjectForPredicate: boolean = false;
+  private objectOptions: ITermToValueOptions | undefined;
+  private lastGraph: RDF.Term | undefined;
 
   constructor(options: IJsonLdSerializerOptions = {}) {
     super({ objectMode: true });
@@ -145,7 +145,7 @@ export class JsonLdSerializer extends Transform {
             this.endSubject(true);
           } else {
             this.endPredicate(true);
-            this.lastSubject = null;
+            this.lastSubject = undefined;
           }
         }
       }
@@ -344,10 +344,10 @@ export class JsonLdSerializer extends Transform {
 
     // Reset object buffer
     this.hadObjectForPredicate = false;
-    this.objectOptions = null;
+    this.objectOptions = undefined;
 
     // Reset predicate buffer
-    this.lastPredicate = null;
+    this.lastPredicate = undefined;
   }
 
   /**
@@ -360,7 +360,7 @@ export class JsonLdSerializer extends Transform {
     this.pushSeparator(comma ? SeparatorType.OBJECT_END_COMMA : SeparatorType.OBJECT_END);
 
     // Reset subject buffer
-    this.lastSubject = null;
+    this.lastSubject = undefined;
   }
 
   /**
@@ -376,7 +376,7 @@ export class JsonLdSerializer extends Transform {
     this.pushSeparator(comma ? SeparatorType.OBJECT_END_COMMA : SeparatorType.OBJECT_END);
 
     // Reset graph buffer
-    this.lastGraph = null;
+    this.lastGraph = undefined;
   }
 
   /**
@@ -437,12 +437,12 @@ export interface IJsonLdSerializerOptions {
   useNativeTypes?: boolean;
   /**
    * An optional base IRI for compacting terms.
-   * Defaults to null.
+   * Defaults to undefined.
    */
   baseIRI?: string;
   /**
    * An optional JSON-LD context for compacting terms.
-   * Defaults to null.
+   * Defaults to undefined.
    */
   context?: JsonLdContext;
   /**
