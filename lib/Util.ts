@@ -25,18 +25,20 @@ export class Util {
     useNativeTypes: false,
   }): any {
     switch (term.termType) {
-      case 'NamedNode':
+      case 'NamedNode': {
         const compacted = context.compactIri(term.value, options.vocab);
         return options.compactIds ? compacted : { '@id': compacted };
+      }
       case 'DefaultGraph':
         return options.compactIds ? term.value : { '@id': term.value };
-      case 'BlankNode':
+      case 'BlankNode': {
         const id = `_:${term.value}`;
         return options.compactIds ? id : { '@id': id };
-      case 'Literal':
-      // Handle JSON datatype
+      }
+      case 'Literal': {
+        // Handle JSON datatype
         if (term.datatype.value === Util.RDF_JSON) {
-          let parsedJson: any;
+          let parsedJson: unknown;
           try {
             parsedJson = JSON.parse(term.value);
           } catch (e) {
@@ -62,6 +64,7 @@ export class Util {
 
         const stringType = term.datatype.value === Util.XSD_STRING;
         const rawValue = {
+          // eslint-disable-next-line ts/no-unsafe-assignment
           '@value': !stringType && options.useNativeTypes ?
             Util.stringToNativeType(term.value, term.datatype.value) :
             term.value,
@@ -71,10 +74,14 @@ export class Util {
             return { ...rawValue, '@language': term.language, '@direction': term.direction };
           }
           return { ...rawValue, '@language': term.language };
-        } if (!stringType && typeof rawValue['@value'] === 'string') {
+        }
+        if (!stringType && typeof rawValue['@value'] === 'string') {
           return { ...rawValue, '@type': term.datatype.value };
         }
         return rawValue;
+      }
+      default:
+        return {};
     }
   }
 
@@ -92,7 +99,8 @@ export class Util {
         case 'boolean':
           if (value === 'true') {
             return true;
-          } if (value === 'false') {
+          }
+          if (value === 'false') {
             return false;
           }
           throw new Error(`Invalid xsd:boolean value '${value}'`);
@@ -100,19 +108,21 @@ export class Util {
         case 'number':
         case 'int':
         case 'byte':
-        case 'long':
+        case 'long': {
           const parsedInt = Number.parseInt(value, 10);
-          if (isNaN(parsedInt)) {
+          if (Number.isNaN(parsedInt)) {
             throw new TypeError(`Invalid xsd:integer value '${value}'`);
           }
           return parsedInt;
+        }
         case 'float':
-        case 'double':
+        case 'double': {
           const parsedFloat = Number.parseFloat(value);
-          if (isNaN(parsedFloat)) {
+          if (Number.isNaN(parsedFloat)) {
             throw new TypeError(`Invalid xsd:float value '${value}'`);
           }
           return parsedFloat;
+        }
       }
     }
     return value;

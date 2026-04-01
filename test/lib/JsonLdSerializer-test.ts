@@ -18,7 +18,7 @@ describe('JsonLdSerializer', () => {
 
   it('should serialize an empty stream', async() => {
     const quads = [];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
       ],
     );
@@ -28,7 +28,7 @@ describe('JsonLdSerializer', () => {
     const quads = [
       DF.quad(DF.namedNode('http://ex.org/myid'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid',
@@ -44,7 +44,7 @@ describe('JsonLdSerializer', () => {
     const quads = [
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': '_:b1',
@@ -61,7 +61,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.namedNode('http://ex.org/myid2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid1',
@@ -84,7 +84,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.namedNode('http://ex.org/myid2'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid1',
@@ -107,7 +107,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid1',
@@ -127,7 +127,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj2')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid1',
@@ -144,7 +144,7 @@ describe('JsonLdSerializer', () => {
     const quads = [
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid1',
@@ -161,7 +161,7 @@ describe('JsonLdSerializer', () => {
     const quads = [
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads, customSerializer)).resolves.toEqual(
+    await expect(serialize(quads, customSerializer)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid1',
@@ -178,7 +178,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('abc')),
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('def')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid1',
@@ -196,7 +196,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('abc', 'en')),
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('def', 'nl')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid1',
@@ -214,7 +214,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('abc', DF.namedNode('http://ex.org/type'))),
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('def', DF.namedNode('http://ex.org/type'))),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid1',
@@ -232,7 +232,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('10', DF.namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('20', DF.namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid1',
@@ -251,7 +251,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('10', DF.namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('20', DF.namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
     ];
-    return await expect(serialize(quads, customSerializer)).resolves.toEqual(
+    await expect(serialize(quads, customSerializer)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/myid1',
@@ -269,14 +269,14 @@ describe('JsonLdSerializer', () => {
     const quads = [
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('abc', DF.namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
     ];
-    return expect(serialize(quads, customSerializer)).rejects.toThrow(new Error('Invalid xsd:integer value \'abc\''));
+    await expect(serialize(quads, customSerializer)).rejects.toThrow(new Error('Invalid xsd:integer value \'abc\''));
   });
 
   it('should serialize a single quad in a custom graph', async() => {
     const quads = [
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1'), DF.namedNode('http://ex.org/mygraph1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -298,7 +298,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -321,7 +321,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj1'), DF.namedNode('http://ex.org/mygraph1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -346,7 +346,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1'), DF.namedNode('http://ex.org/mygraph1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -374,7 +374,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1'), DF.namedNode('http://ex.org/mygraph2')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -407,7 +407,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph2')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -440,7 +440,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph2')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': '_:b1',
@@ -468,7 +468,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph2')),
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph2',
@@ -496,7 +496,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://ex.org/mygraph1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -522,7 +522,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.namedNode('http://ex.org/mysubject'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1'), DF.namedNode('http://ex.org/mygraph1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -554,7 +554,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.namedNode('http://ex.org/mysubject'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -585,7 +585,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.namedNode('http://ex.org/mygraph1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -611,7 +611,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.namedNode('http://ex.org/mygraph1'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -640,7 +640,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://ex.org/mygraph1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph2')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -677,7 +677,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph2')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/mygraph1',
@@ -716,7 +716,7 @@ describe('JsonLdSerializer', () => {
       DF.quad(DF.namedNode('http://data.wikipedia.org/snaks/BerlinFact'), DF.namedNode('http://data.wikipedia.org/vocab#assertedBy'), DF.literal('http://www.statistik-berlin-brandenburg.de/'), DF.namedNode('http://data.wikipedia.org/snaks/Assertions')),
       DF.quad(DF.namedNode('http://en.wikipedia.org/wiki/Berlin'), DF.namedNode('http://data.wikipedia.org/vocab#population'), DF.literal('3499879', DF.namedNode('http://www.w3.org/2001/XMLSchema#integer')), DF.namedNode('http://data.wikipedia.org/snaks/BerlinFact')),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://data.wikipedia.org/snaks/Assertions',
@@ -756,7 +756,7 @@ describe('JsonLdSerializer', () => {
     const quads = [
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://type.org/pred1'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads, new JsonLdSerializer({ baseIRI: 'http://ex.org/' }))).resolves.toEqual(
+    await expect(serialize(quads, new JsonLdSerializer({ baseIRI: 'http://ex.org/' }))).resolves.toEqual(
       {
         '@context': {
           '@base': 'http://ex.org/',
@@ -777,7 +777,7 @@ describe('JsonLdSerializer', () => {
     const quads = [
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://type.org/pred1'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads, new JsonLdSerializer({ baseIRI: 'http://ex.org/', excludeContext: true }))).resolves
+    await expect(serialize(quads, new JsonLdSerializer({ baseIRI: 'http://ex.org/', excludeContext: true }))).resolves
       .toEqual([
         {
           '@id': 'myid1',
@@ -796,7 +796,7 @@ describe('JsonLdSerializer', () => {
       '@base': 'http://ex.org/',
       '@vocab': 'http://type.org/',
     };
-    return await expect(serialize(quads, new JsonLdSerializer({ context }))).resolves.toEqual(
+    await expect(serialize(quads, new JsonLdSerializer({ context }))).resolves.toEqual(
       {
         '@context': {
           '@base': 'http://ex.org/',
@@ -822,7 +822,7 @@ describe('JsonLdSerializer', () => {
       '@base': 'http://ex.org/',
       '@vocab': 'http://type.org/',
     };
-    return await expect(serialize(quads, new JsonLdSerializer({ context, excludeContext: true }))).resolves.toEqual(
+    await expect(serialize(quads, new JsonLdSerializer({ context, excludeContext: true }))).resolves.toEqual(
       [
         {
           '@id': 'myid1',
@@ -842,7 +842,7 @@ describe('JsonLdSerializer', () => {
       ex: 'http://ex.org/',
       type: 'http://type.org/',
     };
-    return await expect(serialize(quads, new JsonLdSerializer({ context }))).resolves.toEqual(
+    await expect(serialize(quads, new JsonLdSerializer({ context }))).resolves.toEqual(
       {
         '@context': {
           ex: 'http://ex.org/',
@@ -869,7 +869,7 @@ describe('JsonLdSerializer', () => {
       p: 'http://type.org/pred1',
       o: 'http://ex.org/obj1',
     };
-    return await expect(serialize(quads, new JsonLdSerializer({ context }))).resolves.toEqual(
+    await expect(serialize(quads, new JsonLdSerializer({ context }))).resolves.toEqual(
       {
         '@context': {
           id: 'http://ex.org/myid1',
@@ -900,7 +900,7 @@ describe('JsonLdSerializer', () => {
         DF.literal('0.8'),
       ),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': {
@@ -938,7 +938,7 @@ describe('JsonLdSerializer', () => {
         DF.namedNode('http://ex.org/alice'),
       ),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': {
@@ -979,7 +979,7 @@ describe('JsonLdSerializer', () => {
         DF.namedNode('http://ex.org/alice'),
       ),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': {
@@ -1019,7 +1019,7 @@ describe('JsonLdSerializer', () => {
         ),
       ),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/bob',
@@ -1059,7 +1059,7 @@ describe('JsonLdSerializer', () => {
         ),
       ),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/bob',
@@ -1112,7 +1112,7 @@ describe('JsonLdSerializer', () => {
         ),
       ),
     ];
-    return await expect(serialize(quads)).resolves.toEqual(
+    await expect(serialize(quads)).resolves.toEqual(
       [
         {
           '@id': 'http://ex.org/bob',
@@ -1152,7 +1152,7 @@ describe('JsonLdSerializer', () => {
         ),
       ),
     ];
-    return expect(serialize(quads)).rejects.toThrow(new Error('Found a nested quad with the non-default graph: http://ex.org/illegal-graph'));
+    await expect(serialize(quads)).rejects.toThrow(new Error('Found a nested quad with the non-default graph: http://ex.org/illegal-graph'));
   });
 
   async function serialize(quadsArray, customSerializer?) {
@@ -1165,7 +1165,7 @@ describe('JsonLdSerializer', () => {
         DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('abc')),
         DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.literal('def')),
       ];
-      return expect(JSON.parse(await stringifyStream(serializer.import(streamifyArray(quads))))).toEqual([
+      expect(JSON.parse(await stringifyStream(serializer.import(streamifyArray(quads))))).toEqual([
         {
           '@id': 'http://ex.org/myid1',
           'http://ex.org/pred1': [
@@ -1181,7 +1181,7 @@ describe('JsonLdSerializer', () => {
         DF.quad(DF.namedNode('http://ex.org/myid2'), DF.namedNode('http://ex.org/pred1'), DF.literal('abc')),
         DF.quad(DF.namedNode('http://ex.org/myid2'), DF.namedNode('http://ex.org/pred1'), DF.literal('def')),
       ];
-      return expect(JSON.parse(await stringifyStream(serializer.import(streamifyArray(quads))))).toEqual([
+      expect(JSON.parse(await stringifyStream(serializer.import(streamifyArray(quads))))).toEqual([
         {
           '@id': 'http://ex.org/myid2',
           'http://ex.org/pred1': [
@@ -1195,7 +1195,7 @@ describe('JsonLdSerializer', () => {
     it('should forward error events', async() => {
       const stream = new PassThrough();
       stream._read = () => stream.emit('error', new Error('my error'));
-      return expect(stringifyStream(serializer.import(stream))).rejects.toThrow(new Error('my error'));
+      await expect(stringifyStream(serializer.import(stream))).rejects.toThrow(new Error('my error'));
     });
   });
 
@@ -1203,7 +1203,7 @@ describe('JsonLdSerializer', () => {
     it('should emit an empty list in a triple', async() => {
       serializer.write(DF.quad(DF.namedNode('http://ex.org/subj1'), DF.namedNode('http://ex.org/pred1'), await serializer.list([])));
       serializer.end();
-      return expect(JSON.parse(await stringifyStream(serializer))).toEqual([
+      expect(JSON.parse(await stringifyStream(serializer))).toEqual([
         {
           '@id': 'http://ex.org/subj1',
           'http://ex.org/pred1': [
@@ -1221,7 +1221,7 @@ describe('JsonLdSerializer', () => {
         DF.namedNode('b'),
       ])));
       serializer.end();
-      return expect(JSON.parse(await stringifyStream(serializer))).toEqual([
+      expect(JSON.parse(await stringifyStream(serializer))).toEqual([
         {
           '@id': 'http://ex.org/subj1',
           'http://ex.org/pred1': [
@@ -1242,7 +1242,7 @@ describe('JsonLdSerializer', () => {
         DF.literal('b'),
       ])));
       serializer.end();
-      return expect(JSON.parse(await stringifyStream(serializer))).toEqual([
+      expect(JSON.parse(await stringifyStream(serializer))).toEqual([
         {
           '@id': 'http://ex.org/subj1',
           'http://ex.org/pred1': [
@@ -1268,7 +1268,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
 
   it('should serialize an empty stream', async() => {
     const quads = [];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
 ]
 `);
   });
@@ -1277,7 +1277,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
     const quads = [
       DF.quad(DF.namedNode('http://ex.org/myid'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
   {
     "@id": "http://ex.org/myid",
     "http://ex.org/pred1": [
@@ -1295,7 +1295,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.namedNode('http://ex.org/myid2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
   {
     "@id": "http://ex.org/myid1",
     "http://ex.org/pred1": [
@@ -1321,7 +1321,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.namedNode('http://ex.org/myid2'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
   {
     "@id": "http://ex.org/myid1",
     "http://ex.org/pred1": [
@@ -1347,7 +1347,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
   {
     "@id": "http://ex.org/myid1",
     "http://ex.org/pred1": [
@@ -1370,7 +1370,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.namedNode('http://ex.org/myid1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj2')),
     ];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
   {
     "@id": "http://ex.org/myid1",
     "http://ex.org/pred1": [
@@ -1392,7 +1392,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
       DF.quad(DF.blankNode('b1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph2')),
     ];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
   {
     "@id": "http://ex.org/mygraph1",
     "@graph": [
@@ -1428,7 +1428,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
       DF.quad(DF.namedNode('http://ex.org/mygraph1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph1')),
     ];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
   {
     "@id": "http://ex.org/mygraph1",
     "http://ex.org/pred1": [
@@ -1457,7 +1457,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph1')),
       DF.quad(DF.namedNode('http://ex.org/mygraph1'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj1')),
     ];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
   {
     "@id": "http://ex.org/mygraph1",
     "http://ex.org/pred1": [
@@ -1491,7 +1491,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
       DF.quad(DF.namedNode('http://ex.org/mygraph1'), DF.namedNode('http://ex.org/pred1'), DF.namedNode('http://ex.org/obj1')),
       DF.quad(DF.blankNode('b2'), DF.namedNode('http://ex.org/pred2'), DF.namedNode('http://ex.org/obj2'), DF.namedNode('http://ex.org/mygraph2')),
     ];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
   {
     "@id": "http://ex.org/mygraph1",
     "@graph": [
@@ -1535,7 +1535,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
       '@base': 'http://ex.org/',
       '@vocab': 'http://type.org/',
     };
-    return await expect(serialize(quads, new JsonLdSerializer({ context, space: '  ' }))).resolves.toBe(`{
+    await expect(serialize(quads, new JsonLdSerializer({ context, space: '  ' }))).resolves.toBe(`{
   "@context":
   {
     "@base": "http://ex.org/",
@@ -1564,7 +1564,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
       '@vocab': 'http://type.org/',
     };
     // Tslint:disable-next-line:max-line-length
-    return await expect(serialize(quads, new JsonLdSerializer({ context }))).resolves.toBe(`{"@context":{"@base":"http://ex.org/","@vocab":"http://type.org/"},"@graph":[{"@id":"myid1","pred1":[{"@id":"obj1"}]}]}`);
+    await expect(serialize(quads, new JsonLdSerializer({ context }))).resolves.toBe(`{"@context":{"@base":"http://ex.org/","@vocab":"http://type.org/"},"@graph":[{"@id":"myid1","pred1":[{"@id":"obj1"}]}]}`);
   });
 
   it('should serialize a quad as subject', async() => {
@@ -1579,7 +1579,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
         DF.literal('0.8'),
       ),
     ];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
   {
     "@id": {
       "@id": "http://ex.org/bob",
@@ -1611,7 +1611,7 @@ describe('JsonLdSerializer with pretty-printing', () => {
         ),
       ),
     ];
-    return await expect(serialize(quads)).resolves.toBe(`[
+    await expect(serialize(quads)).resolves.toBe(`[
   {
     "@id": "http://ex.org/bob",
     "http://ex.org/claims": [

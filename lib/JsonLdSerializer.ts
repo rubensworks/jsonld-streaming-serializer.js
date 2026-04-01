@@ -1,4 +1,3 @@
-import EventEmitter = NodeJS.EventEmitter;
 import type * as RDF from '@rdfjs/types';
 import { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
 import type { JsonLdContext } from 'jsonld-context-parser';
@@ -6,6 +5,7 @@ import { PassThrough, Transform } from 'readable-stream';
 import { SeparatorType } from './SeparatorType';
 import { Util } from './Util';
 import type { ITermToValueOptions } from './Util';
+import EventEmitter = NodeJS.EventEmitter;
 
 /**
  * A stream transformer that transforms an {@link RDF.Stream} into a JSON-LD (text) stream.
@@ -23,7 +23,7 @@ export class JsonLdSerializer extends Transform {
   private objectOptions: ITermToValueOptions | undefined;
   private lastGraph: RDF.Term | undefined;
 
-  constructor(options: IJsonLdSerializerOptions = {}) {
+  public constructor(options: IJsonLdSerializerOptions = {}) {
     super({ objectMode: true });
 
     this.indentation = 0;
@@ -74,11 +74,13 @@ export class JsonLdSerializer extends Transform {
    * inside a quad's object to write into the serializer
    * as a list using the @list keyword.
    * @param {RDF.Quad_Object[]} values A list of values, can be empty.
-   * @return {RDF.Quad_Object} A term that should be used in the object position of the quad that is written to the serializer.
+   * @return {RDF.Quad_Object} A term that should be used in the object position of the quad
+   *                            that is written to the serializer.
    */
   public async list(values: RDF.Term[]): Promise<RDF.Quad_Object> {
     const context = await this.context;
-    return <RDF.Quad_Object> <any> {
+    return <RDF.Quad_Object><unknown> {
+      // eslint-disable-next-line ts/no-unsafe-return
       '@list': values.map(value => Util.termToValue(value, context, this.options)),
     };
   }
@@ -147,7 +149,8 @@ export class JsonLdSerializer extends Transform {
           this.endSubject();
           this.endGraph(true);
 
-          lastSubjectMatchesGraph = false; // Special-case to avoid deeper nesting
+          // Special-case to avoid deeper nesting
+          lastSubjectMatchesGraph = false;
         }
       }
 
@@ -199,7 +202,7 @@ export class JsonLdSerializer extends Transform {
     this.pushObject(quad.object, context);
   }
 
-  protected pushDocumentStart() {
+  protected pushDocumentStart(): void {
     this.opened = true;
 
     if (this.originalContext && !this.options.excludeContext) {
@@ -223,7 +226,7 @@ export class JsonLdSerializer extends Transform {
    * @param startOnNewLine If `{` should start on a new line
    * @param {JsonLdContextNormalized} context The context.
    */
-  protected pushId(term: RDF.Term, startOnNewLine: boolean, context: JsonLdContextNormalized) {
+  protected pushId(term: RDF.Term, startOnNewLine: boolean, context: JsonLdContextNormalized): void {
     if (term.termType === 'Quad') {
       this.pushNestedQuad(term, true, context);
     } else {
@@ -248,7 +251,7 @@ export class JsonLdSerializer extends Transform {
    * @param {Term} predicate An RDF term.
    * @param {JsonLdContextNormalized} context The context.
    */
-  protected pushPredicate(predicate: RDF.Term, context: JsonLdContextNormalized) {
+  protected pushPredicate(predicate: RDF.Term, context: JsonLdContextNormalized): void {
     let property = predicate.value;
 
     // Convert rdf:type into @type if not disabled.
@@ -270,7 +273,7 @@ export class JsonLdSerializer extends Transform {
    * @param {Term} object An RDF term.
    * @param {JsonLdContextNormalized} context The context.
    */
-  protected pushObject(object: RDF.Term, context: JsonLdContextNormalized) {
+  protected pushObject(object: RDF.Term, context: JsonLdContextNormalized): void {
     // Add a comma if we already had an object for this predicate
     if (this.hadObjectForPredicate) {
       this.pushSeparator(SeparatorType.COMMA);
@@ -285,7 +288,8 @@ export class JsonLdSerializer extends Transform {
       this.hadObjectForPredicate = false;
 
       this.pushNestedQuad(object, false, context);
-      this.endSubject(false); // Terminate identifier node of nested quad again, since we won't attach additional information to it.
+      // Terminate identifier node of nested quad again, since we won't attach additional information to it.
+      this.endSubject(false);
 
       this.hadObjectForPredicate = true;
       this.lastPredicate = lastLastPredicate;
@@ -294,11 +298,12 @@ export class JsonLdSerializer extends Transform {
     }
 
     // Convert the object into a value and push it
-    let value;
+    let value: any;
     try {
       if ((<any> object)['@list']) {
         value = object;
       } else {
+        // eslint-disable-next-line ts/no-unsafe-assignment
         value = Util.termToValue(object, context, this.objectOptions || this.options);
       }
     } catch (e) {
@@ -307,7 +312,11 @@ export class JsonLdSerializer extends Transform {
     this.pushIndented(JSON.stringify(value, null, this.options.space));
   }
 
-  protected pushNestedQuad(nestedQuad: RDF.BaseQuad, commaAfterSubject: boolean, context: JsonLdContextNormalized) {
+  protected pushNestedQuad(
+    nestedQuad: RDF.BaseQuad,
+    commaAfterSubject: boolean,
+    context: JsonLdContextNormalized,
+  ): void {
     // Start a nested quad
     this.pushSeparator(SeparatorType.OBJECT_START);
     this.indentation++;
@@ -324,7 +333,7 @@ export class JsonLdSerializer extends Transform {
     this.endSubject(commaAfterSubject);
   }
 
-  protected endDocument() {
+  protected endDocument(): void {
     this.opened = false;
     if (this.originalContext && !this.options.excludeContext) {
       this.indentation--;
@@ -341,7 +350,7 @@ export class JsonLdSerializer extends Transform {
    * Push the end of a predicate and reset the buffers.
    * @param {boolean} comma If a comma should be appended.
    */
-  protected endPredicate(comma?: boolean) {
+  protected endPredicate(comma?: boolean): void {
     // Close the predicate array
     this.indentation--;
     this.pushSeparator(comma ? SeparatorType.ARRAY_END_COMMA : SeparatorType.ARRAY_END);
@@ -358,7 +367,7 @@ export class JsonLdSerializer extends Transform {
    * Push the end of a subject and reset the buffers.
    * @param {boolean} comma If a comma should be appended.
    */
-  protected endSubject(comma?: boolean) {
+  protected endSubject(comma?: boolean): void {
     // Close the last subject's node;
     this.indentation--;
     this.pushSeparator(comma ? SeparatorType.OBJECT_END_COMMA : SeparatorType.OBJECT_END);
@@ -371,7 +380,7 @@ export class JsonLdSerializer extends Transform {
    * Push the end of a graph and reset the buffers.
    * @param {boolean} comma If a comma should be appended.
    */
-  protected endGraph(comma?: boolean) {
+  protected endGraph(comma?: boolean): void {
     // Close the graph array
     this.indentation--;
     this.pushSeparator(SeparatorType.ARRAY_END);
@@ -387,7 +396,7 @@ export class JsonLdSerializer extends Transform {
    * Puh the given separator.
    * @param {SeparatorType} type A type of separator.
    */
-  protected pushSeparator(type: SeparatorType) {
+  protected pushSeparator(type: SeparatorType): void {
     this.pushIndented(type.label);
   }
 
@@ -397,7 +406,7 @@ export class JsonLdSerializer extends Transform {
    * @param {string} data A string.
    * @param pushNewLine If a newline should be pushed afterwards.
    */
-  protected pushIndented(data: string, pushNewLine = true) {
+  protected pushIndented(data: string, pushNewLine = true): void {
     const prefix = this.getIndentPrefix();
     const lines = data.split('\n').map(line => prefix + line).join('\n');
     this.push(lines);
