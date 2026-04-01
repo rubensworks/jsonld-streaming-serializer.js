@@ -178,6 +178,11 @@ describe('Util', () => {
         .toBe('_:b0');
     });
 
+    it('should return empty object for unknown term types', async() => {
+      expect(Util.termToValue(DF.variable('x'), new JsonLdContextNormalized({})))
+        .toEqual({});
+    });
+
     it('should handle DF.literals without language and datatype with useNativeTypes false', async() => {
       expect(Util.termToValue(DF.literal('abc'), new JsonLdContextNormalized({})))
         .toEqual({ '@value': 'abc' });
