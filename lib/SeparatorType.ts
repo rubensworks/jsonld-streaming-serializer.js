@@ -2,7 +2,6 @@
  * A type of JSON separator.
  */
 export class SeparatorType {
-
   public static readonly COMMA = new SeparatorType(',');
   public static readonly OBJECT_START = new SeparatorType('{');
   public static readonly OBJECT_END = new SeparatorType('}');

@@ -35,7 +35,6 @@ _or_
 const JsonLdSerializer = require("jsonld-streaming-serializer").JsonLdSerializer;
 ```
 
-
 ## Usage
 
 `JsonLdSerializer` is a Node [Transform stream](https://nodejs.org/api/stream.html#stream_class_stream_transform)

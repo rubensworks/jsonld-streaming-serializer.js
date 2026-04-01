@@ -1,6 +1,7 @@
-const JsonLdSerializer = require(".").JsonLdSerializer;
+const JsonLdSerializer = require('.').JsonLdSerializer;
 
 const dataFactory = require('@rdfjs/data-model');
+
 const mySerializer = new JsonLdSerializer({
   space: '  ',
   context: {
