@@ -1,24 +1,25 @@
 import EventEmitter = NodeJS.EventEmitter;
-import {ContextParser, JsonLdContextNormalized, JsonLdContext} from "jsonld-context-parser";
-import * as RDF from "@rdfjs/types";
-import {SeparatorType} from "./SeparatorType";
-import {ITermToValueOptions, Util} from "./Util";
-import {PassThrough, Transform} from "readable-stream";
+import type * as RDF from '@rdfjs/types';
+import { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
+import type { JsonLdContext } from 'jsonld-context-parser';
+import { PassThrough, Transform } from 'readable-stream';
+import { SeparatorType } from './SeparatorType';
+import { Util } from './Util';
+import type { ITermToValueOptions } from './Util';
 
 /**
  * A stream transformer that transforms an {@link RDF.Stream} into a JSON-LD (text) stream.
  */
 export class JsonLdSerializer extends Transform {
-
   private readonly options: IJsonLdSerializerOptions;
   private readonly originalContext: JsonLdContext | undefined;
   private readonly context: Promise<JsonLdContextNormalized>;
 
   private indentation: number;
-  private opened: boolean = false;
+  private opened = false;
   private lastSubject: RDF.Term | undefined;
   private lastPredicate: RDF.Term | undefined;
-  private hadObjectForPredicate: boolean = false;
+  private hadObjectForPredicate = false;
   private objectOptions: ITermToValueOptions | undefined;
   private lastGraph: RDF.Term | undefined;
 
@@ -47,8 +48,8 @@ export class JsonLdSerializer extends Transform {
    */
   public import(stream: EventEmitter): EventEmitter {
     const output = new PassThrough({ objectMode: true });
-    stream.on('error', (error) => parsed.emit('error', error));
-    stream.on('data', (data) => output.push(data));
+    stream.on('error', error => parsed.emit('error', error));
+    stream.on('data', data => output.push(data));
     stream.on('end', () => output.push(null));
     const parsed = output.pipe(new JsonLdSerializer(this.options));
     return parsed;
@@ -78,7 +79,7 @@ export class JsonLdSerializer extends Transform {
   public async list(values: RDF.Term[]): Promise<RDF.Quad_Object> {
     const context = await this.context;
     return <RDF.Quad_Object> <any> {
-      '@list': values.map((value) => Util.termToValue(value, context, this.options)),
+      '@list': values.map(value => Util.termToValue(value, context, this.options)),
     };
   }
 
@@ -120,33 +121,33 @@ export class JsonLdSerializer extends Transform {
 
     // Check if the subject equals the last named graph
     // In that case, we can reuse the already-existing @id node
-    const lastGraphMatchesSubject = this.lastGraph && this.lastGraph.termType !== 'DefaultGraph'
-      && this.lastGraph.equals(quad.subject);
+    const lastGraphMatchesSubject = this.lastGraph && this.lastGraph.termType !== 'DefaultGraph' &&
+      this.lastGraph.equals(quad.subject);
 
     // Write graph
     if (!lastGraphMatchesSubject && (!this.lastGraph || !quad.graph.equals(this.lastGraph))) {
       // Check if the named graph equals the last subject
       // In that case, we can reuse the already-existing @id node
-      let lastSubjectMatchesGraph = quad.graph.termType !== 'DefaultGraph'
-        && this.lastSubject && this.lastSubject.equals(quad.graph);
+      let lastSubjectMatchesGraph = quad.graph.termType !== 'DefaultGraph' &&
+        this.lastSubject && this.lastSubject.equals(quad.graph);
 
       if (this.lastGraph) {
-        if (this.lastGraph.termType !== 'DefaultGraph') {
+        if (this.lastGraph.termType === 'DefaultGraph') {
+          // The last graph was default
+          if (lastSubjectMatchesGraph) {
+            this.endPredicate(true);
+            this.lastSubject = undefined;
+          } else {
+            this.endPredicate();
+            this.endSubject(true);
+          }
+        } else {
           // The last graph was named
           this.endPredicate();
           this.endSubject();
           this.endGraph(true);
 
           lastSubjectMatchesGraph = false; // Special-case to avoid deeper nesting
-        } else {
-          // The last graph was default
-          if (!lastSubjectMatchesGraph) {
-            this.endPredicate();
-            this.endSubject(true);
-          } else {
-            this.endPredicate(true);
-            this.lastSubject = undefined;
-          }
         }
       }
 
@@ -155,8 +156,9 @@ export class JsonLdSerializer extends Transform {
         if (!lastSubjectMatchesGraph) {
           this.pushId(quad.graph, true, context);
         }
-        this.pushSeparator(this.options.space
-          ? SeparatorType.GRAPH_FIELD_NONCOMPACT : SeparatorType.GRAPH_FIELD_COMPACT);
+        this.pushSeparator(this.options.space ?
+          SeparatorType.GRAPH_FIELD_NONCOMPACT :
+          SeparatorType.GRAPH_FIELD_COMPACT);
         this.indentation++;
       }
 
@@ -204,9 +206,10 @@ export class JsonLdSerializer extends Transform {
       this.pushSeparator(SeparatorType.OBJECT_START);
       this.indentation++;
       this.pushSeparator(SeparatorType.CONTEXT_FIELD);
-      this.pushIndented(JSON.stringify(this.originalContext, null, this.options.space) + ',');
-      this.pushSeparator(this.options.space
-        ? SeparatorType.GRAPH_FIELD_NONCOMPACT : SeparatorType.GRAPH_FIELD_COMPACT);
+      this.pushIndented(`${JSON.stringify(this.originalContext, null, this.options.space)},`);
+      this.pushSeparator(this.options.space ?
+        SeparatorType.GRAPH_FIELD_NONCOMPACT :
+        SeparatorType.GRAPH_FIELD_COMPACT);
       this.indentation++;
     } else {
       this.pushSeparator(SeparatorType.ARRAY_START);
@@ -224,8 +227,9 @@ export class JsonLdSerializer extends Transform {
     if (term.termType === 'Quad') {
       this.pushNestedQuad(term, true, context);
     } else {
-      const subjectValue = term.termType === 'BlankNode'
-        ? '_:' + term.value : context.compactIri(term.value, false);
+      const subjectValue = term.termType === 'BlankNode' ?
+        `_:${term.value}` :
+        context.compactIri(term.value, false);
       if (startOnNewLine) {
         this.pushSeparator(SeparatorType.OBJECT_START);
       } else {
@@ -268,10 +272,10 @@ export class JsonLdSerializer extends Transform {
    */
   protected pushObject(object: RDF.Term, context: JsonLdContextNormalized) {
     // Add a comma if we already had an object for this predicate
-    if (!this.hadObjectForPredicate) {
-      this.hadObjectForPredicate = true;
-    } else {
+    if (this.hadObjectForPredicate) {
       this.pushSeparator(SeparatorType.COMMA);
+    } else {
+      this.hadObjectForPredicate = true;
     }
 
     // Handle nested quad
@@ -393,9 +397,9 @@ export class JsonLdSerializer extends Transform {
    * @param {string} data A string.
    * @param pushNewLine If a newline should be pushed afterwards.
    */
-  protected pushIndented(data: string, pushNewLine: boolean = true) {
+  protected pushIndented(data: string, pushNewLine = true) {
     const prefix = this.getIndentPrefix();
-    const lines = data.split('\n').map((line) => prefix + line).join('\n');
+    const lines = data.split('\n').map(line => prefix + line).join('\n');
     this.push(lines);
     if (this.options.space && pushNewLine) {
       this.push('\n');
@@ -408,7 +412,6 @@ export class JsonLdSerializer extends Transform {
   protected getIndentPrefix(): string {
     return this.options.space ? this.options.space.repeat(this.indentation) : '';
   }
-
 }
 
 /**

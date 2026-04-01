@@ -1,19 +1,19 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "module": "commonjs",
+    "target": "es2017",
     "lib": [
       "es6",
       "dom"
     ],
-    "target": "es2017",
+    "module": "commonjs",
     "noImplicitAny": true,
-    "removeComments": false,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "inlineSources": true,
     "declaration": true,
-    "importHelpers": false
+    "importHelpers": false,
+    "inlineSources": true,
+    "preserveConstEnums": true,
+    "removeComments": false,
+    "sourceMap": true
   },
   "include": [
     "index.ts",
