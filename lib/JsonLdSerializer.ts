@@ -307,7 +307,8 @@ export class JsonLdSerializer extends Transform {
         value = Util.termToValue(object, context, this.objectOptions || this.options);
       }
     } catch (e) {
-      return this.emit('error', e);
+      this.emit('error', e);
+      return;
     }
     this.pushIndented(JSON.stringify(value, null, this.options.space));
   }
