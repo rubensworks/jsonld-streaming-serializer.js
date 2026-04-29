@@ -77,7 +77,7 @@
     "jest-each": "^30.0.0",
     "jest-rdf": "^2.0.0",
     "manual-git-changelog": "^1.0.1",
-    "pre-commit": "^1.2.2",
+    "pre-commit": "^2.0.0",
     "rdf-data-factory": "^2.0.0",
     "rdf-test-suite": "^2.0.0",
     "stream-to-string": "^1.2.0",
