@@ -1,10 +1,10 @@
 import { PassThrough } from 'node:stream';
 import { DataFactory } from 'rdf-data-factory';
+import { streamifyArray } from 'streamify-array';
 import { JsonLdSerializer } from '../../lib/JsonLdSerializer';
 
 // Tslint:disable:no-var-requires
 const stringifyStream = require('stream-to-string');
-const streamifyArray = require('streamify-array');
 
 const DF = new DataFactory();
 

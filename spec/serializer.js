@@ -14,7 +14,7 @@ module.exports = {
         new ErrorSkipped(`Test with spec version ${options.specVersion} was skipped, only 1.1 and json-ld-star are supported.`),
       );
     }
-    return require('stream-to-string')(require('streamify-array')([ ...data ])
+    return require('stream-to-string')(require('streamify-array').streamifyArray([ ...data ])
       .pipe(new JsonLdSerializer({ baseIRI, space: '  ', excludeContext: true, ...options })));
   },
 };
